@@ -1,0 +1,11 @@
+sudo: required
+services:
+  - cassandra
+language: go
+go:
+  - 1.8.x
+  - 1.9.x
+  - 1.10.x
+install: true
+notifications:
+  email: false
