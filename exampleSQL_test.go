@@ -31,7 +31,7 @@ func Example_cqlSqlSelect() {
 		fmt.Println("no row data")
 		return
 	}
-	
+
 	dest := make([]interface{}, 1)
 	destPointer := make([]interface{}, 1)
 	destPointer[0] = &dest[0]
@@ -55,7 +55,7 @@ func Example_cqlSqlSelect() {
 		return
 	}
 
-	fmt.Println("recived cql_version from system.local")
+	fmt.Println("received cql_version from system.local")
 
-	// output: recived cql_version from system.local
+	// output: received cql_version from system.local
 }

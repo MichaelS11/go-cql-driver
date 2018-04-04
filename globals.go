@@ -62,6 +62,7 @@ var (
 	// ErrArgOrdinalOutOfRange is returned when values ordinal is out of range
 	ErrArgOrdinalOutOfRange = fmt.Errorf("arg ordinal out of range")
 
+  // CqlDriver is the sql driver
 	CqlDriver = &CqlDriverStruct{
 		Logger: log.New(os.Stderr, "cql ", log.Ldate|log.Ltime|log.LUTC|log.Llongfile),
 	}
