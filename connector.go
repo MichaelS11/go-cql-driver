@@ -1,0 +1,29 @@
+// +build go1.10
+
+package cql
+
+import (
+	"context"
+	"database/sql/driver"
+	"io/ioutil"
+	"log"
+)
+
+// Driver returns the cql driver
+func (cqlConnector *CqlConnector) Driver() driver.Driver {
+	return CqlDriver
+}
+
+// Connect returns a new database connection
+func (cqlConnector *CqlConnector) Connect(ctx context.Context) (driver.Conn, error) {
+	cqlConn := &cqlConnStruct{
+		logger:        cqlConnector.Logger,
+		context:       ctx,
+		clusterConfig: cqlConnector.ClusterConfig,
+	}
+	if cqlConn.logger == nil {
+		cqlConn.logger = log.New(ioutil.Discard, "", 0)
+	}
+
+	return cqlConn, nil
+}
