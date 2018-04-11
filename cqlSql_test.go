@@ -45,7 +45,7 @@ func TestSqlCreate(t *testing.T) {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
-	result, err := db.ExecContext(ctx, "create keyspace cqltest with replication = {'class': 'SimpleStrategy', 'replication_factor' : 3}")
+	result, err := db.ExecContext(ctx, "create keyspace cqltest with replication = {'class': 'SimpleStrategy', 'replication_factor' : 1}")
 	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
