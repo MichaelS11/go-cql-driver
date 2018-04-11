@@ -9,8 +9,9 @@ import (
 	"github.com/MichaelS11/go-cql-driver"
 )
 
-func Example_cqlSqlSelect() {
-	db, err := sql.Open("cql", cql.TestHostValid)
+func Example_sqlSelect() {
+	// TestHostValid is the host IP address as a string
+	db, err := sql.Open("cql", cql.TestHostValid+"?timeout=10s&connectTimeout=10s")
 	if err != nil {
 		fmt.Printf("Open error is not nil: %v", err)
 		return
@@ -28,7 +29,7 @@ func Example_cqlSqlSelect() {
 		return
 	}
 	if !rows.Next() {
-		fmt.Println("no row data")
+		fmt.Println("no Next rows")
 		return
 	}
 
