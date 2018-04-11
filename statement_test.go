@@ -58,7 +58,7 @@ func TestStatementExecContext(t *testing.T) {
 		t.Fatal("result is not nil")
 	}
 
-	result, err = cqlStmt.ExecContext(context.Background(), []driver.NamedValue{{Value: 1}})
+	result, err = cqlStmt.ExecContext(context.Background(), []driver.NamedValue{{Ordinal: 1, Value: 1}})
 	if err == nil || err.Error() != expectedError {
 		t.Fatalf("ExecContext error - received: %v - expected: %v ", err, expectedError)
 	}
@@ -74,7 +74,7 @@ func TestStatementExecContext(t *testing.T) {
 		t.Fatal("result is not nil")
 	}
 
-	result, err = cqlStmt.ExecContext(context.Background(), []driver.NamedValue{{Ordinal: 1}})
+	result, err = cqlStmt.ExecContext(context.Background(), []driver.NamedValue{{Ordinal: 2}})
 	if err == nil || err != ErrArgOrdinalOutOfRange {
 		t.Fatalf("ExecContext error - received: %v - expected: %v ", err, ErrArgOrdinalOutOfRange)
 	}
@@ -82,7 +82,7 @@ func TestStatementExecContext(t *testing.T) {
 		t.Fatal("result is not nil")
 	}
 
-	result, err = cqlStmt.ExecContext(context.Background(), []driver.NamedValue{{Ordinal: -1}})
+	result, err = cqlStmt.ExecContext(context.Background(), []driver.NamedValue{{Ordinal: 0}})
 	if err == nil || err != ErrArgOrdinalOutOfRange {
 		t.Fatalf("ExecContext error - received: %v - expected: %v ", err, ErrArgOrdinalOutOfRange)
 	}
@@ -147,7 +147,7 @@ func TestStatementQueryContext(t *testing.T) {
 		t.Fatal("rows is nil")
 	}
 
-	rows, err = cqlStmt.QueryContext(context.Background(), []driver.NamedValue{{Value: 1}})
+	rows, err = cqlStmt.QueryContext(context.Background(), []driver.NamedValue{{Ordinal: 1, Value: 1}})
 	if err != nil {
 		t.Fatalf("QueryContext error - received: %v - expected: %v ", err, nil)
 	}
@@ -163,7 +163,7 @@ func TestStatementQueryContext(t *testing.T) {
 		t.Fatal("rows is not nil")
 	}
 
-	rows, err = cqlStmt.QueryContext(context.Background(), []driver.NamedValue{{Ordinal: 1}})
+	rows, err = cqlStmt.QueryContext(context.Background(), []driver.NamedValue{{Ordinal: 2}})
 	if err == nil || err != ErrArgOrdinalOutOfRange {
 		t.Fatalf("QueryContext error - received: %v - expected: %v ", err, ErrArgOrdinalOutOfRange)
 	}
@@ -171,7 +171,7 @@ func TestStatementQueryContext(t *testing.T) {
 		t.Fatal("rows is not nil")
 	}
 
-	rows, err = cqlStmt.QueryContext(context.Background(), []driver.NamedValue{{Ordinal: -1}})
+	rows, err = cqlStmt.QueryContext(context.Background(), []driver.NamedValue{{Ordinal: 0}})
 	if err == nil || err != ErrArgOrdinalOutOfRange {
 		t.Fatalf("QueryContext error - received: %v - expected: %v ", err, ErrArgOrdinalOutOfRange)
 	}

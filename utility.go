@@ -24,10 +24,10 @@ func namedValuesToInterface(namedValues []driver.NamedValue) ([]interface{}, err
 		if len(namedValues[i].Name) > 0 {
 			return []interface{}{}, ErrArgNamedValuesNotSupported
 		}
-		if namedValues[i].Ordinal < 0 || namedValues[i].Ordinal > len(namedValues)-1 {
+		if namedValues[i].Ordinal < 1 || namedValues[i].Ordinal > len(namedValues) {
 			return []interface{}{}, ErrArgOrdinalOutOfRange
 		}
-		values[namedValues[i].Ordinal] = namedValues[i].Value
+		values[namedValues[i].Ordinal - 1] = namedValues[i].Value
 	}
 	return values, nil
 }
