@@ -25,7 +25,7 @@ func Example_sqlSelect() {
 	rows, err := db.QueryContext(ctx, "select cql_version from system.local")
 	cancel()
 	if err != nil {
-		fmt.Printf("QueryContext error is not nil: %v", err)
+		fmt.Println("QueryContext error is not nil:", err)
 		return
 	}
 	if !rows.Next() {
@@ -38,7 +38,7 @@ func Example_sqlSelect() {
 	destPointer[0] = &dest[0]
 	err = rows.Scan(destPointer...)
 	if err != nil {
-		fmt.Printf("Scan error is not nil: %v", err)
+		fmt.Println("Scan error is not nil:", err)
 		return
 	}
 
@@ -53,6 +53,28 @@ func Example_sqlSelect() {
 	}
 	if len(data) < 3 {
 		fmt.Println("data string len too small")
+		return
+	}
+
+	if rows.Next() {
+		fmt.Println("has Next rows")
+		return
+	}
+
+	err = rows.Err()
+	if err != nil {
+		fmt.Println("Err error is not nil:", err)
+		return
+	}
+	err = rows.Close()
+	if err != nil {
+		fmt.Println("Close error is not nil:", err)
+		return
+	}
+
+	err = db.Close()
+	if err != nil {
+		fmt.Println("Close error is not nil:", err)
 		return
 	}
 

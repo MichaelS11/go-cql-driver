@@ -7,7 +7,7 @@ import (
 )
 
 func TestStatementNumInput(t *testing.T) {
-	stmt := testGetStatementHostValid(t, "")
+	conn, stmt := testGetStatementHostValid(t, "")
 	if stmt == nil {
 		t.Fatal("stmt is nil")
 	}
@@ -16,10 +16,19 @@ func TestStatementNumInput(t *testing.T) {
 	if numInput != -1 {
 		t.Fatalf("NumInput - received: %v - expected: %v ", numInput, -1)
 	}
+
+	err := stmt.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
+	err = conn.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
 }
 
 func TestStatementExec(t *testing.T) {
-	stmt := testGetStatementHostValid(t, "create keyspace if not exists system with replication = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }")
+	conn, stmt := testGetStatementHostValid(t, "create keyspace if not exists system with replication = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }")
 	if stmt == nil {
 		t.Fatal("stmt is nil")
 	}
@@ -40,10 +49,19 @@ func TestStatementExec(t *testing.T) {
 	if result != nil {
 		t.Fatal("result is not nil")
 	}
+
+	err = stmt.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
+	err = conn.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
 }
 
 func TestStatementExecContext(t *testing.T) {
-	stmt := testGetStatementHostValid(t, "create table if not exists system.local (test text primary key)")
+	conn, stmt := testGetStatementHostValid(t, "create table if not exists system.local (test text primary key)")
 	if stmt == nil {
 		t.Fatal("stmt is nil")
 	}
@@ -103,14 +121,18 @@ func TestStatementExecContext(t *testing.T) {
 		t.Fatal("result is not nil")
 	}
 
-	err = cqlStmt.Close()
+	err = stmt.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
+	err = conn.Close()
 	if err != nil {
 		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
 	}
 }
 
 func TestStatementQuery(t *testing.T) {
-	stmt := testGetStatementHostValid(t, "select release_version from system.local}")
+	conn, stmt := testGetStatementHostValid(t, "select release_version from system.local}")
 	if stmt == nil {
 		t.Fatal("stmt is nil")
 	}
@@ -130,10 +152,19 @@ func TestStatementQuery(t *testing.T) {
 	if rows == nil {
 		t.Fatal("rows is nil")
 	}
+
+	err = stmt.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
+	err = conn.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
 }
 
 func TestStatementQueryContext(t *testing.T) {
-	stmt := testGetStatementHostValid(t, "select release_version from system.local}")
+	conn, stmt := testGetStatementHostValid(t, "select release_version from system.local}")
 	if stmt == nil {
 		t.Fatal("stmt is nil")
 	}
@@ -192,14 +223,18 @@ func TestStatementQueryContext(t *testing.T) {
 		t.Fatal("rows is not nil")
 	}
 
-	err = cqlStmt.Close()
+	err = stmt.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
+	err = conn.Close()
 	if err != nil {
 		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
 	}
 }
 
-func testGetRowsHostValid(t *testing.T, query string) driver.Rows {
-	stmt := testGetStatementHostValid(t, query)
+func testGetRowsHostValid(t *testing.T, query string) (driver.Conn, driver.Stmt, driver.Rows) {
+	conn, stmt := testGetStatementHostValid(t, query)
 	if stmt == nil {
 		t.Fatal("stmt is nil")
 	}
@@ -211,5 +246,5 @@ func testGetRowsHostValid(t *testing.T, query string) driver.Rows {
 	if rows == nil {
 		t.Fatal("rows is nil")
 	}
-	return rows
+	return conn, stmt, rows
 }

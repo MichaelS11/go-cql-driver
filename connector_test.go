@@ -40,6 +40,11 @@ func TestConnectorConnect(t *testing.T) {
 		t.Fatalf("conn is nil")
 	}
 
+	err = conn.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
+
 	CqlDriver.Logger = TestLogStderr
 	connector, err = CqlDriver.OpenConnector("")
 	if err != nil {
@@ -55,5 +60,10 @@ func TestConnectorConnect(t *testing.T) {
 	}
 	if conn == nil {
 		t.Fatalf("conn is nil")
+	}
+
+	err = conn.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
 	}
 }

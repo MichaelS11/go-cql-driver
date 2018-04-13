@@ -40,7 +40,7 @@ func (cqlStmt *CqlStmt) execContext(ctx context.Context, values []interface{}) (
 		return nil, ErrQueryIsNil
 	}
 
-	query.WithContext(ctx)
+	query = query.WithContext(ctx)
 	if len(values) > 0 {
 		query = query.Bind(values...)
 	}
@@ -73,7 +73,7 @@ func (cqlStmt *CqlStmt) queryContext(ctx context.Context, values []interface{}) 
 		return nil, ErrQueryIsNil
 	}
 
-	query.WithContext(ctx)
+	query = query.WithContext(ctx)
 	if len(values) > 0 {
 		query = query.Bind(values...)
 	}

@@ -27,7 +27,7 @@ func namedValuesToInterface(namedValues []driver.NamedValue) ([]interface{}, err
 		if namedValues[i].Ordinal < 1 || namedValues[i].Ordinal > len(namedValues) {
 			return []interface{}{}, ErrArgOrdinalOutOfRange
 		}
-		values[namedValues[i].Ordinal - 1] = namedValues[i].Value
+		values[namedValues[i].Ordinal-1] = namedValues[i].Value
 	}
 	return values, nil
 }

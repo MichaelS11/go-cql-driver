@@ -32,6 +32,11 @@ func TestConnectionPing(t *testing.T) {
 		t.Fatal("cqlConn.session is not nil")
 	}
 
+	err = conn.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
+
 	// test ping len(Values) error
 	conn = testGetConnectionHostValid(t)
 	if conn == nil {
@@ -48,6 +53,11 @@ func TestConnectionPing(t *testing.T) {
 	err = cqlConn.Ping(context.Background())
 	if err == nil || err != driver.ErrBadConn {
 		t.Fatalf("Ping error - received: %v - expected: %v ", err, driver.ErrBadConn)
+	}
+
+	err = conn.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
 	}
 
 	// test ping Value not *string
@@ -67,6 +77,11 @@ func TestConnectionPing(t *testing.T) {
 	if err == nil || err != driver.ErrBadConn {
 		t.Fatalf("Ping error - received: %v - expected: %v ", err, driver.ErrBadConn)
 	}
+
+	err = conn.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
 }
 
 func TestConnectionPingInvalid(t *testing.T) {
@@ -79,6 +94,11 @@ func TestConnectionPingInvalid(t *testing.T) {
 	err := cqlConn.Ping(context.Background())
 	if err == nil || err != driver.ErrBadConn {
 		t.Fatalf("Ping error - received: %v - expected: %v ", err, driver.ErrBadConn)
+	}
+
+	err = conn.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
 	}
 }
 
@@ -95,6 +115,16 @@ func TestConnectionPrepare(t *testing.T) {
 	if stmt == nil {
 		t.Fatal("stmt is nil")
 	}
+
+	err = stmt.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
+
+	err = conn.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
 }
 
 func TestConnectionPrepareInvalid(t *testing.T) {
@@ -109,6 +139,11 @@ func TestConnectionPrepareInvalid(t *testing.T) {
 	}
 	if stmt != nil {
 		t.Fatal("stmt is not nil")
+	}
+
+	err = conn.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
 	}
 }
 
@@ -126,6 +161,15 @@ func TestConnectionPrepareContext(t *testing.T) {
 	if stmt == nil {
 		t.Fatal("stmt is nil")
 	}
+
+	err = stmt.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
+	err = conn.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
 }
 
 func TestConnectionBegin(t *testing.T) {
@@ -140,6 +184,11 @@ func TestConnectionBegin(t *testing.T) {
 	}
 	if tx != nil {
 		t.Fatal("tx is not nil")
+	}
+
+	err = conn.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
 	}
 }
 
@@ -157,9 +206,14 @@ func TestConnectionBeginTx(t *testing.T) {
 	if tx != nil {
 		t.Fatal("tx is not nil")
 	}
+
+	err = conn.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
 }
 
-func testGetStatementHostValid(t *testing.T, query string) driver.Stmt {
+func testGetStatementHostValid(t *testing.T, query string) (driver.Conn, driver.Stmt) {
 	conn := testGetConnectionHostValid(t)
 	if conn == nil {
 		t.Fatal("conn is nil")
@@ -171,5 +225,5 @@ func testGetStatementHostValid(t *testing.T, query string) driver.Stmt {
 	if stmt == nil {
 		t.Fatal("stmt is nil")
 	}
-	return stmt
+	return conn, stmt
 }

@@ -7,7 +7,7 @@ import (
 )
 
 func TestRowsColumns(t *testing.T) {
-	rows := testGetRowsHostValid(t, "select cql_version from system.local")
+	conn, stmt, rows := testGetRowsHostValid(t, "select cql_version from system.local")
 	if rows == nil {
 		t.Fatal("rows is nil")
 	}
@@ -19,10 +19,23 @@ func TestRowsColumns(t *testing.T) {
 	if columns[0] != "cql_version" {
 		t.Fatalf("Columns[0] - received: %v - expected: %v ", columns[0], "cql_version")
 	}
+
+	err := rows.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
+	err = stmt.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
+	err = conn.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
 }
 
 func TestRowsNext(t *testing.T) {
-	rows := testGetRowsHostValid(t, "select cql_version from system.local")
+	conn, stmt, rows := testGetRowsHostValid(t, "select cql_version from system.local")
 	if rows == nil {
 		t.Fatal("rows is nil")
 	}
@@ -61,6 +74,14 @@ func TestRowsNext(t *testing.T) {
 	}
 
 	err = rows.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
+	err = stmt.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
+	err = conn.Close()
 	if err != nil {
 		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
 	}
