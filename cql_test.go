@@ -19,6 +19,8 @@ var (
 	ConnectTimeoutInvalid   time.Duration
 	TimeoutValid            time.Duration
 	DisableDestructiveTests bool
+	KeyspaceName            = "cqltest"
+	TableName               = "cqltest_"
 )
 
 func TestMain(m *testing.M) {
@@ -55,6 +57,9 @@ func setupForTesting() int {
 		fmt.Println("timeoutValid ParseDuration error:", err)
 		return 6
 	}
+
+	TableName += time.Now().UTC().Format("20060102150405")
+
 	return 0
 }
 

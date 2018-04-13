@@ -23,7 +23,6 @@ func Example_sqlSelect() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
 	rows, err := db.QueryContext(ctx, "select cql_version from system.local")
-	cancel()
 	if err != nil {
 		fmt.Println("QueryContext error is not nil:", err)
 		return
@@ -71,6 +70,7 @@ func Example_sqlSelect() {
 		fmt.Println("Close error is not nil:", err)
 		return
 	}
+	cancel()
 
 	err = db.Close()
 	if err != nil {

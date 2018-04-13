@@ -21,7 +21,7 @@ func TestSqlOpen(t *testing.T) {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
-	result, err := db.ExecContext(ctx, "drop keyspace if exists cqltest")
+	result, err := db.ExecContext(ctx, "drop keyspace if exists "+KeyspaceName)
 	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
@@ -49,9 +49,9 @@ func TestSqlCreate(t *testing.T) {
 		t.Fatal("db is nil")
 	}
 
-	// create keyspace cqltest
+	// create keyspace
 	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
-	result, err := db.ExecContext(ctx, "create keyspace cqltest with replication = {'class': 'SimpleStrategy', 'replication_factor' : 1}")
+	result, err := db.ExecContext(ctx, "create keyspace "+KeyspaceName+" with replication = {'class': 'SimpleStrategy', 'replication_factor' : 1}")
 	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
@@ -60,9 +60,9 @@ func TestSqlCreate(t *testing.T) {
 		t.Fatal("result is nil")
 	}
 
-	// create table cqltest.cqltest
+	// create table
 	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
-	result, err = db.ExecContext(ctx, "create table cqltest.cqltest (text_data text PRIMARY KEY, int_data int)")
+	result, err = db.ExecContext(ctx, "create table "+KeyspaceName+"."+TableName+" (text_data text PRIMARY KEY, int_data int)")
 	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
@@ -92,8 +92,7 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 
 	// insert one
 	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
-	result, err := db.ExecContext(ctx, "insert into cqltest.cqltest (text_data, int_data) values (?, ?)", "one", 1)
-	cancel()
+	result, err := db.ExecContext(ctx, "insert into "+KeyspaceName+"."+TableName+" (text_data, int_data) values (?, ?)", "one", 1)
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
 	}
@@ -114,11 +113,11 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	if num != -1 {
 		t.Fatal("rows affected is not -1")
 	}
+	cancel()
 
 	// select one
 	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
-	rows, err := db.QueryContext(ctx, "select text_data, int_data from cqltest.cqltest")
-	cancel()
+	rows, err := db.QueryContext(ctx, "select text_data, int_data from "+KeyspaceName+"."+TableName+"")
 	if err != nil {
 		t.Fatal("QueryContext error: ", err)
 	}
@@ -156,10 +155,11 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	if err != nil {
 		t.Fatal("Close error: ", err)
 	}
+	cancel()
 
 	// insert two
 	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
-	result, err = db.ExecContext(ctx, "insert into cqltest.cqltest (text_data, int_data) values (?, ?)", "two", 2)
+	result, err = db.ExecContext(ctx, "insert into "+KeyspaceName+"."+TableName+" (text_data, int_data) values (?, ?)", "two", 2)
 	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
@@ -170,8 +170,7 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 
 	// select two
 	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
-	rows, err = db.QueryContext(ctx, "select text_data, int_data from cqltest.cqltest where text_data = ?", "two")
-	cancel()
+	rows, err = db.QueryContext(ctx, "select text_data, int_data from "+KeyspaceName+"."+TableName+" where text_data = ?", "two")
 	if err != nil {
 		t.Fatal("QueryContext error: ", err)
 	}
@@ -202,10 +201,11 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	if err != nil {
 		t.Fatal("Close error: ", err)
 	}
+	cancel()
 
 	// update two
 	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
-	result, err = db.ExecContext(ctx, "update cqltest.cqltest set int_data = ? where text_data =?", "3", "two")
+	result, err = db.ExecContext(ctx, "update "+KeyspaceName+"."+TableName+" set int_data = ? where text_data =?", "3", "two")
 	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
@@ -216,8 +216,7 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 
 	// select two
 	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
-	rows, err = db.QueryContext(ctx, "select text_data, int_data from cqltest.cqltest where text_data = ?", "two")
-	cancel()
+	rows, err = db.QueryContext(ctx, "select text_data, int_data from "+KeyspaceName+"."+TableName+" where text_data = ?", "two")
 	if err != nil {
 		t.Fatal("QueryContext error: ", err)
 	}
@@ -248,10 +247,11 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	if err != nil {
 		t.Fatal("Close error: ", err)
 	}
+	cancel()
 
 	// delete two
 	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
-	result, err = db.ExecContext(ctx, "delete from cqltest.cqltest where text_data =?", "two")
+	result, err = db.ExecContext(ctx, "delete from "+KeyspaceName+"."+TableName+" where text_data =?", "two")
 	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
@@ -262,8 +262,7 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 
 	// select two
 	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
-	rows, err = db.QueryContext(ctx, "select text_data, int_data from cqltest.cqltest where text_data = ?", "two")
-	cancel()
+	rows, err = db.QueryContext(ctx, "select text_data, int_data from "+KeyspaceName+"."+TableName+" where text_data = ?", "two")
 	if err != nil {
 		t.Fatal("QueryContext error: ", err)
 	}
@@ -281,10 +280,11 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	if err != nil {
 		t.Fatal("Close error: ", err)
 	}
+	cancel()
 
 	// delete two
 	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
-	result, err = db.ExecContext(ctx, "delete from cqltest.cqltest where text_data =?", "two")
+	result, err = db.ExecContext(ctx, "delete from "+KeyspaceName+"."+TableName+" where text_data =?", "two")
 	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
@@ -315,8 +315,7 @@ func TestSqlSelectLoop(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		// select all
 		ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
-		rows, err := db.QueryContext(ctx, "select text_data, int_data from cqltest.cqltest")
-		cancel()
+		rows, err := db.QueryContext(ctx, "select text_data, int_data from "+KeyspaceName+"."+TableName+"")
 		if err != nil {
 			t.Fatal("QueryContext error: ", err)
 		}
@@ -351,6 +350,7 @@ func TestSqlSelectLoop(t *testing.T) {
 		if err != nil {
 			t.Fatal("Close error: ", err)
 		}
+		cancel()
 	}
 
 	err = db.Close()
@@ -372,9 +372,9 @@ func TestSqTruncate(t *testing.T) {
 		t.Fatal("db is nil")
 	}
 
-	// truncate table cqltest.cqltest
+	// truncate table
 	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
-	result, err := db.ExecContext(ctx, "truncate table cqltest.cqltest")
+	result, err := db.ExecContext(ctx, "truncate table "+KeyspaceName+"."+TableName+"")
 	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
@@ -385,8 +385,7 @@ func TestSqTruncate(t *testing.T) {
 
 	// select all
 	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
-	rows, err := db.QueryContext(ctx, "select text_data, int_data from cqltest.cqltest")
-	cancel()
+	rows, err := db.QueryContext(ctx, "select text_data, int_data from "+KeyspaceName+"."+TableName+"")
 	if err != nil {
 		t.Fatal("QueryContext error: ", err)
 	}
@@ -404,6 +403,7 @@ func TestSqTruncate(t *testing.T) {
 	if err != nil {
 		t.Fatal("Close error: ", err)
 	}
+	cancel()
 
 	err = db.Close()
 	if err != nil {
@@ -425,7 +425,7 @@ func TestSqlDrop(t *testing.T) {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
-	result, err := db.ExecContext(ctx, "drop table cqltest.cqltest")
+	result, err := db.ExecContext(ctx, "drop table "+KeyspaceName+"."+TableName+"")
 	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
@@ -435,7 +435,7 @@ func TestSqlDrop(t *testing.T) {
 	}
 
 	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
-	result, err = db.ExecContext(ctx, "drop keyspace cqltest")
+	result, err = db.ExecContext(ctx, "drop keyspace "+KeyspaceName)
 	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
