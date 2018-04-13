@@ -7,7 +7,16 @@ import (
 	"database/sql/driver"
 	"io/ioutil"
 	"log"
+	"os"
 )
+
+// NewConnector returns a new database connector
+func NewConnector(hosts ...string) driver.Connector {
+	return &CqlConnector{
+		Logger:        log.New(os.Stderr, "cql ", log.Ldate|log.Ltime|log.LUTC|log.Llongfile),
+		ClusterConfig: NewClusterConfig(hosts...),
+	}
+}
 
 // Driver returns the cql driver
 func (cqlConnector *CqlConnector) Driver() driver.Driver {
