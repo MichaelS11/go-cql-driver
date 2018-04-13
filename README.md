@@ -12,3 +12,9 @@ This is a database/sql interface wrapper for https://github.com/gocql/gocql
 ## Get
 
 go get github.com/MichaelS11/go-cql-driver
+
+## Example
+
+A simple SQL select example can be found on the godoc
+
+https://godoc.org/github.com/MichaelS11/go-cql-driver#example-package--SqlSelect
