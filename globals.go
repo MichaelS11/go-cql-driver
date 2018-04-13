@@ -38,6 +38,7 @@ type (
 	CqlStmt struct {
 		// CqlQuery is used for changing query options
 		// https://godoc.org/github.com/gocql/gocql#Query
+		// This will only work if Go sql every gives access to the driver
 		CqlQuery *gocql.Query
 	}
 
