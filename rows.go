@@ -29,7 +29,7 @@ func (cqlRows *cqlRowsStruct) Next(dest []driver.Value) error {
 
 	rowData, err := cqlRows.iter.RowData()
 	if err != nil {
-		cqlRows.iter.Close()
+		cqlRows.Close()
 		return fmt.Errorf("RowData error: %v", err)
 	}
 	length := len(rowData.Values)
