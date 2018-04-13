@@ -85,24 +85,24 @@ func TestStatementExecContext(t *testing.T) {
 	}
 
 	result, err = cqlStmt.ExecContext(context.Background(), []driver.NamedValue{{Name: "a"}})
-	if err == nil || err != ErrArgNamedValuesNotSupported {
-		t.Fatalf("ExecContext error - received: %v - expected: %v ", err, ErrArgNamedValuesNotSupported)
+	if err == nil || err != ErrNamedValuesNotSupported {
+		t.Fatalf("ExecContext error - received: %v - expected: %v ", err, ErrNamedValuesNotSupported)
 	}
 	if result != nil {
 		t.Fatal("result is not nil")
 	}
 
 	result, err = cqlStmt.ExecContext(context.Background(), []driver.NamedValue{{Ordinal: 2}})
-	if err == nil || err != ErrArgOrdinalOutOfRange {
-		t.Fatalf("ExecContext error - received: %v - expected: %v ", err, ErrArgOrdinalOutOfRange)
+	if err == nil || err != ErrOrdinalOutOfRange {
+		t.Fatalf("ExecContext error - received: %v - expected: %v ", err, ErrOrdinalOutOfRange)
 	}
 	if result != nil {
 		t.Fatal("result is not nil")
 	}
 
 	result, err = cqlStmt.ExecContext(context.Background(), []driver.NamedValue{{Ordinal: 0}})
-	if err == nil || err != ErrArgOrdinalOutOfRange {
-		t.Fatalf("ExecContext error - received: %v - expected: %v ", err, ErrArgOrdinalOutOfRange)
+	if err == nil || err != ErrOrdinalOutOfRange {
+		t.Fatalf("ExecContext error - received: %v - expected: %v ", err, ErrOrdinalOutOfRange)
 	}
 	if result != nil {
 		t.Fatal("result is not nil")
@@ -187,24 +187,24 @@ func TestStatementQueryContext(t *testing.T) {
 	}
 
 	rows, err = cqlStmt.QueryContext(context.Background(), []driver.NamedValue{{Name: "a"}})
-	if err == nil || err != ErrArgNamedValuesNotSupported {
-		t.Fatalf("QueryContext error - received: %v - expected: %v ", err, ErrArgNamedValuesNotSupported)
+	if err == nil || err != ErrNamedValuesNotSupported {
+		t.Fatalf("QueryContext error - received: %v - expected: %v ", err, ErrNamedValuesNotSupported)
 	}
 	if rows != nil {
 		t.Fatal("rows is not nil")
 	}
 
 	rows, err = cqlStmt.QueryContext(context.Background(), []driver.NamedValue{{Ordinal: 2}})
-	if err == nil || err != ErrArgOrdinalOutOfRange {
-		t.Fatalf("QueryContext error - received: %v - expected: %v ", err, ErrArgOrdinalOutOfRange)
+	if err == nil || err != ErrOrdinalOutOfRange {
+		t.Fatalf("QueryContext error - received: %v - expected: %v ", err, ErrOrdinalOutOfRange)
 	}
 	if rows != nil {
 		t.Fatal("rows is not nil")
 	}
 
 	rows, err = cqlStmt.QueryContext(context.Background(), []driver.NamedValue{{Ordinal: 0}})
-	if err == nil || err != ErrArgOrdinalOutOfRange {
-		t.Fatalf("QueryContext error - received: %v - expected: %v ", err, ErrArgOrdinalOutOfRange)
+	if err == nil || err != ErrOrdinalOutOfRange {
+		t.Fatalf("QueryContext error - received: %v - expected: %v ", err, ErrOrdinalOutOfRange)
 	}
 	if rows != nil {
 		t.Fatal("rows is not nil")

@@ -57,10 +57,10 @@ var (
 	ErrNotImplementedYet = fmt.Errorf("not implemented yet")
 	// ErrQueryIsNil is returned when a query is nil
 	ErrQueryIsNil = fmt.Errorf("query is nil")
-	// ErrArgNamedValuesNotSupported is returned with values are named. Named values are not supported.
-	ErrArgNamedValuesNotSupported = fmt.Errorf("arg named values not supported")
-	// ErrArgOrdinalOutOfRange is returned when values ordinal is out of range
-	ErrArgOrdinalOutOfRange = fmt.Errorf("arg ordinal out of range")
+	// ErrNamedValuesNotSupported is returned when values are named. Named values are not supported.
+	ErrNamedValuesNotSupported = fmt.Errorf("named values not supported")
+	// ErrOrdinalOutOfRange is returned when values ordinal is out of range
+	ErrOrdinalOutOfRange = fmt.Errorf("ordinal out of range")
 
 	// CqlDriver is the sql driver
 	CqlDriver = &CqlDriverStruct{

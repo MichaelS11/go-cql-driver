@@ -22,10 +22,10 @@ func namedValuesToInterface(namedValues []driver.NamedValue) ([]interface{}, err
 	values := make([]interface{}, len(namedValues))
 	for i := 0; i < len(namedValues); i++ {
 		if len(namedValues[i].Name) > 0 {
-			return []interface{}{}, ErrArgNamedValuesNotSupported
+			return []interface{}{}, ErrNamedValuesNotSupported
 		}
 		if namedValues[i].Ordinal < 1 || namedValues[i].Ordinal > len(namedValues) {
-			return []interface{}{}, ErrArgOrdinalOutOfRange
+			return []interface{}{}, ErrOrdinalOutOfRange
 		}
 		values[namedValues[i].Ordinal-1] = namedValues[i].Value
 	}
