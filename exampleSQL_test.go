@@ -10,8 +10,10 @@ import (
 )
 
 func Example_sqlSelect() {
-	// TestHostValid is the host IP address as a string
-	db, err := sql.Open("cql", cql.TestHostValid+"?timeout=10s&connectTimeout=10s")
+	// Normal Open to localhost would look like:
+	// db, err := sql.Open("cql", "127.0.0.1")
+	// For testing, need to use some variables: TestHostValid, TimeoutValidString, and ConnectTimeoutValidString
+	db, err := sql.Open("cql", cql.TestHostValid+"?timeout="+cql.TimeoutValidString+"&connectTimeout="+cql.ConnectTimeoutValidString)
 	if err != nil {
 		fmt.Printf("Open error is not nil: %v", err)
 		return

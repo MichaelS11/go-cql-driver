@@ -12,15 +12,17 @@ import (
 )
 
 var (
-	TestLogStderr           = log.New(os.Stderr, "cql ", log.Ldate|log.Ltime|log.LUTC|log.Llongfile)
-	TestHostValid           string
-	TestHostInvalid         string
-	ConnectTimeoutValid     time.Duration
-	ConnectTimeoutInvalid   time.Duration
-	TimeoutValid            time.Duration
-	DisableDestructiveTests bool
-	KeyspaceName            = "cqltest"
-	TableName               = "cqltest_"
+	TestLogStderr             = log.New(os.Stderr, "cql ", log.Ldate|log.Ltime|log.LUTC|log.Llongfile)
+	TestHostValid             string
+	TestHostInvalid           string
+	ConnectTimeoutValidString string
+	ConnectTimeoutValid       time.Duration
+	ConnectTimeoutInvalid     time.Duration
+	TimeoutValidString        string
+	TimeoutValid              time.Duration
+	DisableDestructiveTests   bool
+	KeyspaceName              = "cqltest"
+	TableName                 = "cqltest_"
 )
 
 func TestMain(m *testing.M) {
@@ -35,14 +37,14 @@ func TestMain(m *testing.M) {
 func setupForTesting() int {
 	flag.StringVar(&TestHostValid, "hostValid", "127.0.0.1", "a host where a Cassandra database is running")
 	flag.StringVar(&TestHostInvalid, "hostInvalid", "169.254.200.200", "a host where a Cassandra database is not running")
-	connectTimeoutValidString := flag.String("connectTimeoutValid", "10s", "the connect timeout time duration for host valid tests (ClusterConfig.ConnectTimeout)")
+	flag.StringVar(&ConnectTimeoutValidString, "connectTimeoutValid", "10s", "the connect timeout time duration for host valid tests (ClusterConfig.ConnectTimeout)")
 	connectTimeoutInvalidString := flag.String("connectTimeoutInvalid", "1ms", "the connect timeout time duration for host invalid tests (ClusterConfig.ConnectTimeout)")
-	timeoutValidString := flag.String("timeoutValid", "10s", "the timeout time duration for host valid tests (ClusterConfig.Timeout)")
+	flag.StringVar(&TimeoutValidString, "timeoutValid", "10s", "the timeout time duration for host valid tests (ClusterConfig.Timeout)")
 	flag.BoolVar(&DisableDestructiveTests, "disableDestructiveTests", false, "set to disable the destructive database tests on cqltest keyspace")
 	flag.Parse()
 
 	var err error
-	ConnectTimeoutValid, err = time.ParseDuration(*connectTimeoutValidString)
+	ConnectTimeoutValid, err = time.ParseDuration(ConnectTimeoutValidString)
 	if err != nil {
 		fmt.Println("connectTimeoutValid ParseDuration error:", err)
 		return 2
@@ -52,7 +54,7 @@ func setupForTesting() int {
 		fmt.Println("connectTimeoutInvalid ParseDuration error:", err)
 		return 4
 	}
-	TimeoutValid, err = time.ParseDuration(*timeoutValidString)
+	TimeoutValid, err = time.ParseDuration(TimeoutValidString)
 	if err != nil {
 		fmt.Println("timeoutValid ParseDuration error:", err)
 		return 6
