@@ -8,7 +8,12 @@ import (
 )
 
 func TestSqlOpen(t *testing.T) {
-	db, err := sql.Open("cql", TestHostValid+"?timeout=10s&connectTimeout=10s")
+	openString := TestHostValid + "?timeout=10s&connectTimeout=10s"
+	if EnableAuthentication {
+		openString += "&username=" + Username + "&password=" + Password
+	}
+
+	db, err := sql.Open("cql", openString)
 	if err != nil {
 		t.Fatal("Open error: ", err)
 	}
@@ -41,7 +46,12 @@ func TestSqlCreate(t *testing.T) {
 		return
 	}
 
-	db, err := sql.Open("cql", TestHostValid+"?timeout=10s&connectTimeout=10s")
+	openString := TestHostValid + "?timeout=10s&connectTimeout=10s"
+	if EnableAuthentication {
+		openString += "&username=" + Username + "&password=" + Password
+	}
+
+	db, err := sql.Open("cql", openString)
 	if err != nil {
 		t.Fatal("Open error: ", err)
 	}
@@ -82,7 +92,12 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 		return
 	}
 
-	db, err := sql.Open("cql", TestHostValid+"?timeout=10s&connectTimeout=10s")
+	openString := TestHostValid + "?timeout=10s&connectTimeout=10s"
+	if EnableAuthentication {
+		openString += "&username=" + Username + "&password=" + Password
+	}
+
+	db, err := sql.Open("cql", openString)
 	if err != nil {
 		t.Fatal("Open error: ", err)
 	}
@@ -304,7 +319,12 @@ func TestSqlSelectLoop(t *testing.T) {
 		return
 	}
 
-	db, err := sql.Open("cql", TestHostValid+"?timeout=10s&connectTimeout=10s")
+	openString := TestHostValid + "?timeout=10s&connectTimeout=10s"
+	if EnableAuthentication {
+		openString += "&username=" + Username + "&password=" + Password
+	}
+
+	db, err := sql.Open("cql", openString)
 	if err != nil {
 		t.Fatal("Open error: ", err)
 	}
@@ -364,7 +384,12 @@ func TestSqTruncate(t *testing.T) {
 		return
 	}
 
-	db, err := sql.Open("cql", TestHostValid+"?timeout=10s&connectTimeout=10s")
+	openString := TestHostValid + "?timeout=10s&connectTimeout=10s"
+	if EnableAuthentication {
+		openString += "&username=" + Username + "&password=" + Password
+	}
+
+	db, err := sql.Open("cql", openString)
 	if err != nil {
 		t.Fatal("Open error: ", err)
 	}
@@ -416,7 +441,12 @@ func TestSqlDrop(t *testing.T) {
 		return
 	}
 
-	db, err := sql.Open("cql", TestHostValid+"?timeout=10s&connectTimeout=10s")
+	openString := TestHostValid + "?timeout=10s&connectTimeout=10s"
+	if EnableAuthentication {
+		openString += "&username=" + Username + "&password=" + Password
+	}
+
+	db, err := sql.Open("cql", openString)
 	if err != nil {
 		t.Fatal("Open error: ", err)
 	}

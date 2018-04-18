@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/MichaelS11/go-cql-driver"
+	"github.com/gocql/gocql"
 )
 
 func Example_sqlConnector() {
@@ -16,7 +17,7 @@ func Example_sqlConnector() {
 
 	// Normal NewConnector to localhost would look like:
 	// connector := cql.NewConnector("127.0.0.1")
-	// For testing, need to use the variable TestHostValid
+	// For testing, need to use additional variables
 	connector := cql.NewConnector(cql.TestHostValid)
 
 	db := sql.OpenDB(connector)
@@ -27,6 +28,13 @@ func Example_sqlConnector() {
 	cqlConnector := connector.(*cql.CqlConnector)
 	cqlConnector.ClusterConfig.Timeout = cql.TimeoutValid
 	cqlConnector.ClusterConfig.ConnectTimeout = cql.ConnectTimeoutValid
+	if cql.EnableAuthentication {
+		passwordAuthenticator := gocql.PasswordAuthenticator{
+			Username: cql.Username,
+			Password: cql.Password,
+		}
+		cqlConnector.ClusterConfig.Authenticator = passwordAuthenticator
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
 	rows, err := db.QueryContext(ctx, "select cql_version from system.local")

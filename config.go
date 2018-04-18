@@ -20,7 +20,12 @@ func NewClusterConfig(hosts ...string) *gocql.ClusterConfig {
 
 // ClusterConfigToConfigString converts a gocql ClusterConfig to a config string
 func ClusterConfigToConfigString(clusterConfig *gocql.ClusterConfig) string {
-	stringConfig := "consistency=" + strconv.FormatUint(uint64(clusterConfig.Consistency), 10) + "&"
+	clusterConfigDefault := gocql.NewCluster()
+	stringConfig := ""
+
+	if clusterConfig.Consistency != clusterConfigDefault.Consistency {
+		stringConfig += "consistency=" + strconv.FormatUint(uint64(clusterConfig.Consistency), 10) + "&"
+	}
 	if clusterConfig.Timeout >= 0 {
 		stringConfig += "timeout=" + clusterConfig.Timeout.String() + "&"
 	}
@@ -30,8 +35,23 @@ func ClusterConfigToConfigString(clusterConfig *gocql.ClusterConfig) string {
 	if clusterConfig.NumConns > 1 {
 		stringConfig += "numConns=" + strconv.FormatInt(int64(clusterConfig.NumConns), 10) + "&"
 	}
+	if clusterConfig.Authenticator != nil {
+		passwordAuthenticator, ok := clusterConfig.Authenticator.(gocql.PasswordAuthenticator)
+		if ok {
+			if passwordAuthenticator.Username != "" {
+				stringConfig += "username=" + passwordAuthenticator.Username + "&"
+			}
+			if passwordAuthenticator.Password != "" {
+				stringConfig += "password=" + passwordAuthenticator.Password + "&"
+			}
+		}
+	}
 
-	stringConfig = strings.Join(clusterConfig.Hosts, ",") + "?" + stringConfig[:len(stringConfig)-1]
+	if stringConfig == "" {
+		stringConfig = strings.Join(clusterConfig.Hosts, ",")
+	} else {
+		stringConfig = strings.Join(clusterConfig.Hosts, ",") + "?" + stringConfig[:len(stringConfig)-1]
+	}
 
 	return stringConfig
 }
@@ -50,6 +70,8 @@ func ConfigStringToClusterConfig(configString string) (*gocql.ClusterConfig, err
 			}
 		}
 	}
+
+	passwordAuthenticator := gocql.PasswordAuthenticator{}
 
 	if len(configStringSplit) > 1 && len(configStringSplit[1]) > 1 {
 		dataSplit := strings.Split(configStringSplit[1], "&")
@@ -91,6 +113,12 @@ func ConfigStringToClusterConfig(configString string) (*gocql.ClusterConfig, err
 					if data > 0 {
 						clusterConfig.NumConns = int(data)
 					}
+				case "username":
+					passwordAuthenticator.Username = value
+					clusterConfig.Authenticator = passwordAuthenticator
+				case "password":
+					passwordAuthenticator.Password = value
+					clusterConfig.Authenticator = passwordAuthenticator
 				default:
 					return nil, fmt.Errorf("invalid key: %v", key)
 				}

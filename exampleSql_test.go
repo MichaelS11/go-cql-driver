@@ -10,10 +10,15 @@ import (
 )
 
 func Example_sqlSelect() {
-	// Normal Open to localhost would look like:
+	openString := cql.TestHostValid + "?timeout=" + cql.TimeoutValidString + "&connectTimeout=" + cql.ConnectTimeoutValidString
+	if cql.EnableAuthentication {
+		openString += "&username=" + cql.Username + "&password=" + cql.Password
+	}
+
+	// A normal simple Open to localhost would look like:
 	// db, err := sql.Open("cql", "127.0.0.1")
-	// For testing, need to use some variables: TestHostValid, TimeoutValidString, and ConnectTimeoutValidString
-	db, err := sql.Open("cql", cql.TestHostValid+"?timeout="+cql.TimeoutValidString+"&connectTimeout="+cql.ConnectTimeoutValidString)
+	// For testing, need to use additional variables
+	db, err := sql.Open("cql", openString)
 	if err != nil {
 		fmt.Printf("Open error is not nil: %v", err)
 		return
@@ -88,10 +93,15 @@ func Example_sqlSelect() {
 func Example_sqlStatement() {
 	// Example shows how to use database statement
 
-	// Normal Open to localhost would look like:
+	openString := cql.TestHostValid + "?timeout=" + cql.TimeoutValidString + "&connectTimeout=" + cql.ConnectTimeoutValidString
+	if cql.EnableAuthentication {
+		openString += "&username=" + cql.Username + "&password=" + cql.Password
+	}
+
+	// A normal simple Open to localhost would look like:
 	// db, err := sql.Open("cql", "127.0.0.1")
-	// For testing, need to use some variables: TestHostValid, TimeoutValidString, and ConnectTimeoutValidString
-	db, err := sql.Open("cql", cql.TestHostValid+"?timeout="+cql.TimeoutValidString+"&connectTimeout="+cql.ConnectTimeoutValidString)
+	// For testing, need to use additional variables
+	db, err := sql.Open("cql", openString)
 	if err != nil {
 		fmt.Printf("Open error is not nil: %v", err)
 		return
@@ -104,6 +114,14 @@ func Example_sqlStatement() {
 	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
 	stmt, err := db.PrepareContext(ctx, "select cql_version from system.local")
 	cancel()
+	if err != nil {
+		fmt.Println("PrepareContext error is not nil:", err)
+		return
+	}
+	if stmt == nil {
+		fmt.Println("stmt is nil")
+		return
+	}
 
 	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
 	rows, err := stmt.QueryContext(ctx)

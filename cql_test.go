@@ -23,6 +23,9 @@ var (
 	DisableDestructiveTests   bool
 	KeyspaceName              = "cqltest"
 	TableName                 = "cqltest_"
+	EnableAuthentication      bool
+	Username                  string
+	Password                  string
 )
 
 func TestMain(m *testing.M) {
@@ -41,6 +44,9 @@ func setupForTesting() int {
 	connectTimeoutInvalidString := flag.String("connectTimeoutInvalid", "1ms", "the connect timeout time duration for host invalid tests (ClusterConfig.ConnectTimeout)")
 	flag.StringVar(&TimeoutValidString, "timeoutValid", "10s", "the timeout time duration for host valid tests (ClusterConfig.Timeout)")
 	flag.BoolVar(&DisableDestructiveTests, "disableDestructiveTests", false, "set to disable the destructive database tests on cqltest keyspace")
+	flag.BoolVar(&EnableAuthentication, "enableAuthentication", false, "set to enable authentication when database requires username and password")
+	flag.StringVar(&Username, "username", "cassandra", "the username to use when database requires username and password")
+	flag.StringVar(&Password, "password", "cassandra", "the password to use when database requires username and password")
 	flag.Parse()
 
 	var err error
@@ -95,7 +101,11 @@ func TestDriverOpen(t *testing.T) {
 }
 
 func testGetConnectionHostValid(t *testing.T) driver.Conn {
-	conn, err := CqlDriver.Open(TestHostValid)
+	openString := TestHostValid
+	if EnableAuthentication {
+		openString += "?username=" + Username + "&password=" + Password
+	}
+	conn, err := CqlDriver.Open(openString)
 	if err != nil {
 		t.Fatalf("Open error - received: %v - expected: %v ", err, nil)
 	}
