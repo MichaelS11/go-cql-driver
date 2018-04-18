@@ -10,6 +10,8 @@ import (
 )
 
 func Example_sqlSelect() {
+	// Example shows how to do a basic select
+	
 	openString := cql.TestHostValid + "?timeout=" + cql.TimeoutValidString + "&connectTimeout=" + cql.ConnectTimeoutValidString
 	if cql.EnableAuthentication {
 		openString += "&username=" + cql.Username + "&password=" + cql.Password
