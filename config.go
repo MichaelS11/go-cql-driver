@@ -24,7 +24,11 @@ func ClusterConfigToConfigString(clusterConfig *gocql.ClusterConfig) string {
 	stringConfig := ""
 
 	if clusterConfig.Consistency != clusterConfigDefault.Consistency {
-		stringConfig += "consistency=" + strconv.FormatUint(uint64(clusterConfig.Consistency), 10) + "&"
+		consistency, ok := DbConsistency[clusterConfig.Consistency]
+		if !ok {
+			panic(fmt.Sprint("clusterConfig.Consistency value not found in DbConsistency: ", clusterConfig.Consistency))
+		}
+		stringConfig += "consistency=" + consistency + "&"
 	}
 	if clusterConfig.Timeout >= 0 {
 		stringConfig += "timeout=" + clusterConfig.Timeout.String() + "&"
@@ -94,11 +98,11 @@ func ConfigStringToClusterConfig(configString string) (*gocql.ClusterConfig, err
 				key, value := strings.TrimSpace(settingSplit[0]), strings.TrimSpace(settingSplit[1])
 				switch key {
 				case "consistency":
-					data, err := strconv.ParseUint(value, 10, 16)
-					if err != nil {
+					consistency, ok := DbConsistencyLevels[value]
+					if !ok {
 						return nil, fmt.Errorf("failed for: %v = %v", key, value)
 					}
-					clusterConfig.Consistency = gocql.Consistency(data)
+					clusterConfig.Consistency = gocql.Consistency(consistency)
 				case "timeout":
 					data, err := time.ParseDuration(value)
 					if err != nil {

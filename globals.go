@@ -82,6 +82,19 @@ var DbConsistencyLevels = map[string]gocql.Consistency{
 	"localOne":    gocql.LocalOne,
 }
 
+// DbConsistency maps gocql consistency levels to string
+var DbConsistency = map[gocql.Consistency]string{
+	gocql.Any:         "any",
+	gocql.One:         "one",
+	gocql.Two:         "two",
+	gocql.Three:       "three",
+	gocql.Quorum:      "quorum",
+	gocql.All:         "all",
+	gocql.LocalQuorum: "localQuorum",
+	gocql.EachQuorum:  "eachQuorum",
+	gocql.LocalOne:    "localOne",
+}
+
 func init() {
 	sql.Register("cql", CqlDriver)
 }

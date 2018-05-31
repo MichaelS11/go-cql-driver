@@ -32,19 +32,19 @@ func TestClusterConfigToConfigString(t *testing.T) {
 		clusterConfig *gocql.ClusterConfig
 		configString  string
 	}{
-		{info: "empty", clusterConfig: &gocql.ClusterConfig{}, configString: "?consistency=0&timeout=0s&connectTimeout=0s"},
-		{info: "Consistency", clusterConfig: &gocql.ClusterConfig{Consistency: 1}, configString: "?consistency=1&timeout=0s&connectTimeout=0s"},
-		{info: "Timeout < 0", clusterConfig: &gocql.ClusterConfig{Timeout: -1}, configString: "?consistency=0&connectTimeout=0s"},
-		{info: "Timeout > 0", clusterConfig: &gocql.ClusterConfig{Timeout: 10 * time.Second}, configString: "?consistency=0&timeout=10s&connectTimeout=0s"},
-		{info: "ConnectTimeout < 0", clusterConfig: &gocql.ClusterConfig{ConnectTimeout: -1}, configString: "?consistency=0&timeout=0s"},
-		{info: "ConnectTimeout > 0", clusterConfig: &gocql.ClusterConfig{ConnectTimeout: 10 * time.Second}, configString: "?consistency=0&timeout=0s&connectTimeout=10s"},
-		{info: "NumConns < 2", clusterConfig: &gocql.ClusterConfig{NumConns: 1}, configString: "?consistency=0&timeout=0s&connectTimeout=0s"},
-		{info: "IgnorePeerAddr false DisableInitialHostLookup false", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: false, DisableInitialHostLookup: false}, configString: "?consistency=0&timeout=0s&connectTimeout=0s"},
-		{info: "IgnorePeerAddr true DisableInitialHostLookup false", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: true, DisableInitialHostLookup: false}, configString: "?consistency=0&timeout=0s&connectTimeout=0s&ignorePeerAddr=true"},
-		{info: "IgnorePeerAddr false DisableInitialHostLookup true", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: false, DisableInitialHostLookup: true}, configString: "?consistency=0&timeout=0s&connectTimeout=0s&disableInitialHostLookup=true"},
-		{info: "IgnorePeerAddr true DisableInitialHostLookup true", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: true, DisableInitialHostLookup: true}, configString: "?consistency=0&timeout=0s&connectTimeout=0s&ignorePeerAddr=true&disableInitialHostLookup=true"},
-		{info: "Host", clusterConfig: &gocql.ClusterConfig{Hosts: []string{"one"}}, configString: "one?consistency=0&timeout=0s&connectTimeout=0s"},
-		{info: "Hosts", clusterConfig: &gocql.ClusterConfig{Hosts: []string{"one", "two", "three"}}, configString: "one,two,three?consistency=0&timeout=0s&connectTimeout=0s"},
+		{info: "empty", clusterConfig: &gocql.ClusterConfig{}, configString: "?consistency=any&timeout=0s&connectTimeout=0s"},
+		{info: "Consistency", clusterConfig: &gocql.ClusterConfig{Consistency: 1}, configString: "?consistency=one&timeout=0s&connectTimeout=0s"},
+		{info: "Timeout < 0", clusterConfig: &gocql.ClusterConfig{Timeout: -1}, configString: "?consistency=any&connectTimeout=0s"},
+		{info: "Timeout > 0", clusterConfig: &gocql.ClusterConfig{Timeout: 10 * time.Second}, configString: "?consistency=any&timeout=10s&connectTimeout=0s"},
+		{info: "ConnectTimeout < 0", clusterConfig: &gocql.ClusterConfig{ConnectTimeout: -1}, configString: "?consistency=any&timeout=0s"},
+		{info: "ConnectTimeout > 0", clusterConfig: &gocql.ClusterConfig{ConnectTimeout: 10 * time.Second}, configString: "?consistency=any&timeout=0s&connectTimeout=10s"},
+		{info: "NumConns < 2", clusterConfig: &gocql.ClusterConfig{NumConns: 1}, configString: "?consistency=any&timeout=0s&connectTimeout=0s"},
+		{info: "IgnorePeerAddr false DisableInitialHostLookup false", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: false, DisableInitialHostLookup: false}, configString: "?consistency=any&timeout=0s&connectTimeout=0s"},
+		{info: "IgnorePeerAddr true DisableInitialHostLookup false", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: true, DisableInitialHostLookup: false}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&ignorePeerAddr=true"},
+		{info: "IgnorePeerAddr false DisableInitialHostLookup true", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: false, DisableInitialHostLookup: true}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&disableInitialHostLookup=true"},
+		{info: "IgnorePeerAddr true DisableInitialHostLookup true", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: true, DisableInitialHostLookup: true}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&ignorePeerAddr=true&disableInitialHostLookup=true"},
+		{info: "Host", clusterConfig: &gocql.ClusterConfig{Hosts: []string{"one"}}, configString: "one?consistency=any&timeout=0s&connectTimeout=0s"},
+		{info: "Hosts", clusterConfig: &gocql.ClusterConfig{Hosts: []string{"one", "two", "three"}}, configString: "one,two,three?consistency=any&timeout=0s&connectTimeout=0s"},
 	}
 	for _, test := range tests {
 		configString := ClusterConfigToConfigString(test.clusterConfig)
@@ -69,9 +69,9 @@ func TestConfigStringToClusterConfig(t *testing.T) {
 	}
 
 	tests = append(tests, TestStringToConfigStruct{info: "empty", configString: "", clusterConfig: NewClusterConfig()})
-	tests = append(tests, TestStringToConfigStruct{info: "Consistency 0", configString: "?consistency=0", clusterConfig: NewClusterConfig()})
+	tests = append(tests, TestStringToConfigStruct{info: "Consistency any", configString: "?consistency=any", clusterConfig: NewClusterConfig()})
 	tests[len(tests)-1].clusterConfig.Consistency = 0
-	tests = append(tests, TestStringToConfigStruct{info: "Consistency 1", configString: "?consistency=1", clusterConfig: NewClusterConfig()})
+	tests = append(tests, TestStringToConfigStruct{info: "Consistency one", configString: "?consistency=one", clusterConfig: NewClusterConfig()})
 	tests[len(tests)-1].clusterConfig.Consistency = 1
 	tests = append(tests, TestStringToConfigStruct{info: "Timeout < 0", configString: "?timeout=-1s", clusterConfig: NewClusterConfig()})
 	tests = append(tests, TestStringToConfigStruct{info: "Timeout > 0", configString: "?timeout=1s", clusterConfig: NewClusterConfig()})
@@ -90,10 +90,10 @@ func TestConfigStringToClusterConfig(t *testing.T) {
 	tests[len(tests)-1].clusterConfig.Hosts = []string{"one"}
 	tests = append(tests, TestStringToConfigStruct{info: "Hosts", configString: "one,two,three", clusterConfig: NewClusterConfig()})
 	tests[len(tests)-1].clusterConfig.Hosts = []string{"one", "two", "three"}
-	tests = append(tests, TestStringToConfigStruct{info: "Host & Consistency 0", configString: "one?consistency=0", clusterConfig: NewClusterConfig()})
+	tests = append(tests, TestStringToConfigStruct{info: "Host & Consistency any", configString: "one?consistency=any", clusterConfig: NewClusterConfig()})
 	tests[len(tests)-1].clusterConfig.Consistency = 0
 	tests[len(tests)-1].clusterConfig.Hosts = []string{"one"}
-	tests = append(tests, TestStringToConfigStruct{info: "Hosts & Consistency 1", configString: "one,two,three?consistency=1", clusterConfig: NewClusterConfig()})
+	tests = append(tests, TestStringToConfigStruct{info: "Hosts & Consistency one", configString: "one,two,three?consistency=one", clusterConfig: NewClusterConfig()})
 	tests[len(tests)-1].clusterConfig.Consistency = 1
 	tests[len(tests)-1].clusterConfig.Hosts = []string{"one", "two", "three"}
 
