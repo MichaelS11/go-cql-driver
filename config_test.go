@@ -39,7 +39,10 @@ func TestClusterConfigToConfigString(t *testing.T) {
 		{info: "ConnectTimeout < 0", clusterConfig: &gocql.ClusterConfig{ConnectTimeout: -1}, configString: "?consistency=0&timeout=0s"},
 		{info: "ConnectTimeout > 0", clusterConfig: &gocql.ClusterConfig{ConnectTimeout: 10 * time.Second}, configString: "?consistency=0&timeout=0s&connectTimeout=10s"},
 		{info: "NumConns < 2", clusterConfig: &gocql.ClusterConfig{NumConns: 1}, configString: "?consistency=0&timeout=0s&connectTimeout=0s"},
-		{info: "NumConns > 1", clusterConfig: &gocql.ClusterConfig{NumConns: 2}, configString: "?consistency=0&timeout=0s&connectTimeout=0s&numConns=2"},
+		{info: "IgnorePeerAddr false DisableInitialHostLookup false", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: false, DisableInitialHostLookup: false}, configString: "?consistency=0&timeout=0s&connectTimeout=0s"},
+		{info: "IgnorePeerAddr true DisableInitialHostLookup false", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: true, DisableInitialHostLookup: false}, configString: "?consistency=0&timeout=0s&connectTimeout=0s&ignorePeerAddr=true"},
+		{info: "IgnorePeerAddr false DisableInitialHostLookup true", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: false, DisableInitialHostLookup: true}, configString: "?consistency=0&timeout=0s&connectTimeout=0s&disableInitialHostLookup=true"},
+		{info: "IgnorePeerAddr true DisableInitialHostLookup true", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: true, DisableInitialHostLookup: true}, configString: "?consistency=0&timeout=0s&connectTimeout=0s&ignorePeerAddr=true&disableInitialHostLookup=true"},
 		{info: "Host", clusterConfig: &gocql.ClusterConfig{Hosts: []string{"one"}}, configString: "one?consistency=0&timeout=0s&connectTimeout=0s"},
 		{info: "Hosts", clusterConfig: &gocql.ClusterConfig{Hosts: []string{"one", "two", "three"}}, configString: "one,two,three?consistency=0&timeout=0s&connectTimeout=0s"},
 	}
@@ -58,6 +61,8 @@ func TestConfigStringToClusterConfig(t *testing.T) {
 		{info: "failed timeout", configString: "?timeout=", err: fmt.Errorf("failed for: timeout = ")},
 		{info: "failed connectTimeout", configString: "?connectTimeout=", err: fmt.Errorf("failed for: connectTimeout = ")},
 		{info: "failed numConns", configString: "?numConns=", err: fmt.Errorf("failed for: numConns = ")},
+		{info: "failed ignorePeerAddr", configString: "?ignorePeerAddr=", err: fmt.Errorf("failed for: ignorePeerAddr = ")},
+		{info: "failed disableInitialHostLookup", configString: "?disableInitialHostLookup=", err: fmt.Errorf("failed for: disableInitialHostLookup = ")},
 		{info: "invalid key", configString: "?foo=bar", err: fmt.Errorf("invalid key: foo")},
 
 		{info: "empty", configString: "", clusterConfig: NewClusterConfig()},
@@ -77,6 +82,10 @@ func TestConfigStringToClusterConfig(t *testing.T) {
 	tests = append(tests, TestStringToConfigStruct{info: "NumConns < 1", configString: "?numConns=0", clusterConfig: NewClusterConfig()})
 	tests = append(tests, TestStringToConfigStruct{info: "NumConns > 1", configString: "?numConns=2", clusterConfig: NewClusterConfig()})
 	tests[len(tests)-1].clusterConfig.NumConns = 2
+	tests = append(tests, TestStringToConfigStruct{info: "ignorePeerAddr true", configString: "?ignorePeerAddr=true", clusterConfig: NewClusterConfig()})
+	tests[len(tests)-1].clusterConfig.IgnorePeerAddr = true
+	tests = append(tests, TestStringToConfigStruct{info: "disableInitialHostLookup true", configString: "?disableInitialHostLookup=true", clusterConfig: NewClusterConfig()})
+	tests[len(tests)-1].clusterConfig.DisableInitialHostLookup = true
 	tests = append(tests, TestStringToConfigStruct{info: "Host", configString: "one", clusterConfig: NewClusterConfig()})
 	tests[len(tests)-1].clusterConfig.Hosts = []string{"one"}
 	tests = append(tests, TestStringToConfigStruct{info: "Hosts", configString: "one,two,three", clusterConfig: NewClusterConfig()})

@@ -35,6 +35,16 @@ func ClusterConfigToConfigString(clusterConfig *gocql.ClusterConfig) string {
 	if clusterConfig.NumConns > 1 {
 		stringConfig += "numConns=" + strconv.FormatInt(int64(clusterConfig.NumConns), 10) + "&"
 	}
+	if clusterConfig.NumConns > 1 {
+		stringConfig += "numConns=" + strconv.FormatInt(int64(clusterConfig.NumConns), 10) + "&"
+	}
+	if clusterConfig.IgnorePeerAddr != clusterConfigDefault.IgnorePeerAddr {
+		stringConfig += "ignorePeerAddr=" + fmt.Sprint(clusterConfig.IgnorePeerAddr) + "&"
+	}
+	if clusterConfig.DisableInitialHostLookup != clusterConfigDefault.DisableInitialHostLookup {
+		stringConfig += "disableInitialHostLookup=" + fmt.Sprint(clusterConfig.DisableInitialHostLookup) + "&"
+	}
+
 	if clusterConfig.Authenticator != nil {
 		passwordAuthenticator, ok := clusterConfig.Authenticator.(gocql.PasswordAuthenticator)
 		if ok {
@@ -113,6 +123,18 @@ func ConfigStringToClusterConfig(configString string) (*gocql.ClusterConfig, err
 					if data > 0 {
 						clusterConfig.NumConns = int(data)
 					}
+				case "ignorePeerAddr":
+					data, err := strconv.ParseBool(value)
+					if err != nil {
+						return nil, fmt.Errorf("failed for: %v = %v", key, value)
+					}
+					clusterConfig.IgnorePeerAddr = data
+				case "disableInitialHostLookup":
+					data, err := strconv.ParseBool(value)
+					if err != nil {
+						return nil, fmt.Errorf("failed for: %v = %v", key, value)
+					}
+					clusterConfig.DisableInitialHostLookup = data
 				case "username":
 					passwordAuthenticator.Username = value
 					clusterConfig.Authenticator = passwordAuthenticator
