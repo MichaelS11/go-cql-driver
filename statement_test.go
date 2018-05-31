@@ -36,15 +36,32 @@ func TestStatementExec(t *testing.T) {
 	result, err := stmt.Exec([]driver.Value{})
 	expectedError := "system keyspace is not user-modifiable"
 	if err == nil || err.Error() != expectedError {
-		t.Fatalf("Exec error - received: %v - expected: %v ", err, expectedError)
+		if EnableAuthentication && err != nil && len(err.Error()) > len(Username)+33 {
+			receivedError := err.Error()[:len(Username)+33]
+			expectedError = "User " + Username + " has no CREATE permission on"
+			if receivedError != expectedError {
+				t.Fatalf("Exec error - received: %v - expected: %v", receivedError, expectedError)
+			}
+		} else {
+			t.Fatalf("Exec error - received: %v - expected: %v", err, expectedError)
+		}
 	}
 	if result != nil {
 		t.Fatal("result is not nil")
 	}
 
 	result, err = stmt.Exec([]driver.Value{driver.Value(1)})
+	expectedError = "system keyspace is not user-modifiable"
 	if err == nil || err.Error() != expectedError {
-		t.Fatalf("Exec error - received: %v - expected: %v ", err, expectedError)
+		if EnableAuthentication && err != nil && len(err.Error()) > len(Username)+33 {
+			receivedError := err.Error()[:len(Username)+33]
+			expectedError = "User " + Username + " has no CREATE permission on"
+			if receivedError != expectedError {
+				t.Fatalf("Exec error - received: %v - expected: %v", receivedError, expectedError)
+			}
+		} else {
+			t.Fatalf("Exec error - received: %v - expected: %v", err, expectedError)
+		}
 	}
 	if result != nil {
 		t.Fatal("result is not nil")
