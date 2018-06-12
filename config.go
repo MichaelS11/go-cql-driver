@@ -30,6 +30,9 @@ func ClusterConfigToConfigString(clusterConfig *gocql.ClusterConfig) string {
 		}
 		stringConfig += "consistency=" + consistency + "&"
 	}
+	if clusterConfig.Keyspace != "" {
+		stringConfig += "keyspace=" + clusterConfig.Keyspace
+	}
 	if clusterConfig.Timeout >= 0 {
 		stringConfig += "timeout=" + clusterConfig.Timeout.String() + "&"
 	}
@@ -103,6 +106,11 @@ func ConfigStringToClusterConfig(configString string) (*gocql.ClusterConfig, err
 						return nil, fmt.Errorf("failed for: %v = %v", key, value)
 					}
 					clusterConfig.Consistency = gocql.Consistency(consistency)
+				case "keyspace":
+					if value == "" {
+						return nil, fmt.Errorf("failed for: %v = %v", key, value)
+					}
+					clusterConfig.Keyspace = value
 				case "timeout":
 					data, err := time.ParseDuration(value)
 					if err != nil {
