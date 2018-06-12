@@ -38,6 +38,7 @@ func TestClusterConfigToConfigString(t *testing.T) {
 		{info: "Timeout > 0", clusterConfig: &gocql.ClusterConfig{Timeout: 10 * time.Second}, configString: "?consistency=any&timeout=10s&connectTimeout=0s"},
 		{info: "ConnectTimeout < 0", clusterConfig: &gocql.ClusterConfig{ConnectTimeout: -1}, configString: "?consistency=any&timeout=0s"},
 		{info: "ConnectTimeout > 0", clusterConfig: &gocql.ClusterConfig{ConnectTimeout: 10 * time.Second}, configString: "?consistency=any&timeout=0s&connectTimeout=10s"},
+		{info: "Keyspace", clusterConfig: &gocql.ClusterConfig{Keyspace: "system"}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&keyspace=system"},
 		{info: "NumConns < 2", clusterConfig: &gocql.ClusterConfig{NumConns: 1}, configString: "?consistency=any&timeout=0s&connectTimeout=0s"},
 		{info: "IgnorePeerAddr false DisableInitialHostLookup false", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: false, DisableInitialHostLookup: false}, configString: "?consistency=any&timeout=0s&connectTimeout=0s"},
 		{info: "IgnorePeerAddr true DisableInitialHostLookup false", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: true, DisableInitialHostLookup: false}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&ignorePeerAddr=true"},
@@ -79,6 +80,8 @@ func TestConfigStringToClusterConfig(t *testing.T) {
 	tests = append(tests, TestStringToConfigStruct{info: "ConnectTimeout < 0", configString: "?connectTimeout=-1s", clusterConfig: NewClusterConfig()})
 	tests = append(tests, TestStringToConfigStruct{info: "ConnectTimeout > 0", configString: "?connectTimeout=1s", clusterConfig: NewClusterConfig()})
 	tests[len(tests)-1].clusterConfig.ConnectTimeout = time.Second
+	tests = append(tests, TestStringToConfigStruct{info: "Keyspace", configString: "?keyspace=system", clusterConfig: NewClusterConfig()})
+	tests[len(tests)-1].clusterConfig.Keyspace = "system"
 	tests = append(tests, TestStringToConfigStruct{info: "NumConns < 1", configString: "?numConns=0", clusterConfig: NewClusterConfig()})
 	tests = append(tests, TestStringToConfigStruct{info: "NumConns > 1", configString: "?numConns=2", clusterConfig: NewClusterConfig()})
 	tests[len(tests)-1].clusterConfig.NumConns = 2

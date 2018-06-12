@@ -19,6 +19,7 @@ func NewClusterConfig(hosts ...string) *gocql.ClusterConfig {
 }
 
 // ClusterConfigToConfigString converts a gocql ClusterConfig to a config string
+// https://godoc.org/github.com/gocql/gocql#ClusterConfig
 func ClusterConfigToConfigString(clusterConfig *gocql.ClusterConfig) string {
 	clusterConfigDefault := gocql.NewCluster()
 	stringConfig := ""
@@ -30,14 +31,14 @@ func ClusterConfigToConfigString(clusterConfig *gocql.ClusterConfig) string {
 		}
 		stringConfig += "consistency=" + consistency + "&"
 	}
-	if clusterConfig.Keyspace != "" {
-		stringConfig += "keyspace=" + clusterConfig.Keyspace
-	}
 	if clusterConfig.Timeout >= 0 {
 		stringConfig += "timeout=" + clusterConfig.Timeout.String() + "&"
 	}
 	if clusterConfig.ConnectTimeout >= 0 {
 		stringConfig += "connectTimeout=" + clusterConfig.ConnectTimeout.String() + "&"
+	}
+	if clusterConfig.Keyspace != "" {
+		stringConfig += "keyspace=" + clusterConfig.Keyspace + "&"
 	}
 	if clusterConfig.NumConns > 1 {
 		stringConfig += "numConns=" + strconv.FormatInt(int64(clusterConfig.NumConns), 10) + "&"
