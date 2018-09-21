@@ -52,6 +52,9 @@ func ClusterConfigToConfigString(clusterConfig *gocql.ClusterConfig) string {
 	if clusterConfig.DisableInitialHostLookup != clusterConfigDefault.DisableInitialHostLookup {
 		stringConfig += "disableInitialHostLookup=" + fmt.Sprint(clusterConfig.DisableInitialHostLookup) + "&"
 	}
+	if clusterConfig.WriteCoalesceWaitTime != clusterConfigDefault.WriteCoalesceWaitTime {
+		stringConfig += "writeCoalesceWaitTime=" + fmt.Sprint(clusterConfig.WriteCoalesceWaitTime) + "&"
+	}
 
 	if clusterConfig.Authenticator != nil {
 		passwordAuthenticator, ok := clusterConfig.Authenticator.(gocql.PasswordAuthenticator)
@@ -148,6 +151,12 @@ func ConfigStringToClusterConfig(configString string) (*gocql.ClusterConfig, err
 						return nil, fmt.Errorf("failed for: %v = %v", key, value)
 					}
 					clusterConfig.DisableInitialHostLookup = data
+				case "writeCoalesceWaitTime":
+					data, err := time.ParseDuration(value)
+					if err != nil {
+						return nil, fmt.Errorf("failed for: %v = %v", key, value)
+					}
+					clusterConfig.WriteCoalesceWaitTime = data
 				case "username":
 					passwordAuthenticator.Username = value
 					clusterConfig.Authenticator = passwordAuthenticator
