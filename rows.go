@@ -29,23 +29,14 @@ func (cqlRows *cqlRowsStruct) Next(dest []driver.Value) error {
 
 	rowData, err := cqlRows.iter.RowData()
 	if err != nil {
-		cqlRows.Close()
 		return fmt.Errorf("RowData error: %v", err)
 	}
 	length := len(rowData.Values)
 	if length < 1 {
-		err = cqlRows.Close()
-		if err != nil {
-			return err
-		}
 		return io.EOF
 	}
 
 	if !cqlRows.iter.Scan(rowData.Values...) {
-		err = cqlRows.Close()
-		if err != nil {
-			return err
-		}
 		return io.EOF
 	}
 
@@ -55,7 +46,6 @@ func (cqlRows *cqlRowsStruct) Next(dest []driver.Value) error {
 	for i := 0; i < length; i++ {
 		dest[i], err = interfaceToValue(rowData.Values[i])
 		if err != nil {
-			cqlRows.Close()
 			return fmt.Errorf("interfaceToValue error: %v", err)
 		}
 	}
