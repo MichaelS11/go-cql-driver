@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"testing"
-	"time"
 )
 
 func TestSqlOpen(t *testing.T) {
@@ -22,10 +21,14 @@ func TestSqlOpen(t *testing.T) {
 	}
 
 	if DisableDestructiveTests {
-		return
+		err = db.Close()
+		if err != nil {
+			t.Fatal("Close error: ", err)
+		}
+		t.SkipNow()
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), TimeoutValid)
 	result, err := db.ExecContext(ctx, "drop keyspace if exists "+KeyspaceName)
 	cancel()
 	if err != nil {
@@ -43,7 +46,7 @@ func TestSqlOpen(t *testing.T) {
 
 func TestSqlCreate(t *testing.T) {
 	if DisableDestructiveTests {
-		return
+		t.SkipNow()
 	}
 
 	openString := TestHostValid + "?timeout=10s&connectTimeout=10s"
@@ -60,7 +63,7 @@ func TestSqlCreate(t *testing.T) {
 	}
 
 	// create keyspace
-	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), TimeoutValid)
 	result, err := db.ExecContext(ctx, "create keyspace "+KeyspaceName+" with replication = {'class': 'SimpleStrategy', 'replication_factor' : 1}")
 	cancel()
 	if err != nil {
@@ -71,7 +74,7 @@ func TestSqlCreate(t *testing.T) {
 	}
 
 	// create table
-	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
 	result, err = db.ExecContext(ctx, "create table "+KeyspaceName+"."+TableName+" (text_data text PRIMARY KEY, int_data int)")
 	cancel()
 	if err != nil {
@@ -89,7 +92,7 @@ func TestSqlCreate(t *testing.T) {
 
 func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	if DisableDestructiveTests {
-		return
+		t.SkipNow()
 	}
 
 	openString := TestHostValid + "?timeout=10s&connectTimeout=10s"
@@ -106,7 +109,7 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	}
 
 	// insert one
-	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), TimeoutValid)
 	result, err := db.ExecContext(ctx, "insert into "+KeyspaceName+"."+TableName+" (text_data, int_data) values (?, ?)", "one", 1)
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
@@ -131,7 +134,7 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	cancel()
 
 	// select one
-	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
 	rows, err := db.QueryContext(ctx, "select text_data, int_data from "+KeyspaceName+"."+TableName+"")
 	if err != nil {
 		t.Fatal("QueryContext error: ", err)
@@ -173,7 +176,7 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	cancel()
 
 	// insert two
-	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
 	result, err = db.ExecContext(ctx, "insert into "+KeyspaceName+"."+TableName+" (text_data, int_data) values (?, ?)", "two", 2)
 	cancel()
 	if err != nil {
@@ -184,7 +187,7 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	}
 
 	// select two
-	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
 	rows, err = db.QueryContext(ctx, "select text_data, int_data from "+KeyspaceName+"."+TableName+" where text_data = ?", "two")
 	if err != nil {
 		t.Fatal("QueryContext error: ", err)
@@ -219,8 +222,8 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	cancel()
 
 	// update two
-	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
-	result, err = db.ExecContext(ctx, "update "+KeyspaceName+"."+TableName+" set int_data = ? where text_data =?", "3", "two")
+	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
+	result, err = db.ExecContext(ctx, "update "+KeyspaceName+"."+TableName+" set int_data = ? where text_data = ?", "3", "two")
 	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
@@ -230,7 +233,7 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	}
 
 	// select two
-	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
 	rows, err = db.QueryContext(ctx, "select text_data, int_data from "+KeyspaceName+"."+TableName+" where text_data = ?", "two")
 	if err != nil {
 		t.Fatal("QueryContext error: ", err)
@@ -265,8 +268,8 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	cancel()
 
 	// delete two
-	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
-	result, err = db.ExecContext(ctx, "delete from "+KeyspaceName+"."+TableName+" where text_data =?", "two")
+	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
+	result, err = db.ExecContext(ctx, "delete from "+KeyspaceName+"."+TableName+" where text_data = ?", "two")
 	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
@@ -276,7 +279,7 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	}
 
 	// select two
-	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
 	rows, err = db.QueryContext(ctx, "select text_data, int_data from "+KeyspaceName+"."+TableName+" where text_data = ?", "two")
 	if err != nil {
 		t.Fatal("QueryContext error: ", err)
@@ -298,8 +301,8 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	cancel()
 
 	// delete two
-	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
-	result, err = db.ExecContext(ctx, "delete from "+KeyspaceName+"."+TableName+" where text_data =?", "two")
+	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
+	result, err = db.ExecContext(ctx, "delete from "+KeyspaceName+"."+TableName+" where text_data = ?", "two")
 	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
@@ -307,6 +310,17 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	if result == nil {
 		t.Fatal("result is nil")
 	}
+
+	// select error
+	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
+	rows, err = db.QueryContext(ctx, "select int_data from "+KeyspaceName+"."+TableName+" group by int_data")
+	if err != nil {
+		t.Fatal("QueryContext error: ", err)
+	}
+	if rows.Close() == nil {
+		t.Fatal("QueryContext no error")
+	}
+	cancel()
 
 	err = db.Close()
 	if err != nil {
@@ -316,7 +330,7 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 
 func TestSqlSelectLoop(t *testing.T) {
 	if DisableDestructiveTests {
-		return
+		t.SkipNow()
 	}
 
 	openString := TestHostValid + "?timeout=10s&connectTimeout=10s"
@@ -334,7 +348,7 @@ func TestSqlSelectLoop(t *testing.T) {
 
 	for i := 0; i < 100; i++ {
 		// select all
-		ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), TimeoutValid)
 		rows, err := db.QueryContext(ctx, "select text_data, int_data from "+KeyspaceName+"."+TableName+"")
 		if err != nil {
 			t.Fatal("QueryContext error: ", err)
@@ -381,7 +395,7 @@ func TestSqlSelectLoop(t *testing.T) {
 
 func TestSqTruncate(t *testing.T) {
 	if DisableDestructiveTests {
-		return
+		t.SkipNow()
 	}
 
 	openString := TestHostValid + "?timeout=10s&connectTimeout=10s"
@@ -398,7 +412,7 @@ func TestSqTruncate(t *testing.T) {
 	}
 
 	// truncate table
-	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), TimeoutValid)
 	result, err := db.ExecContext(ctx, "truncate table "+KeyspaceName+"."+TableName+"")
 	cancel()
 	if err != nil {
@@ -409,7 +423,7 @@ func TestSqTruncate(t *testing.T) {
 	}
 
 	// select all
-	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
 	rows, err := db.QueryContext(ctx, "select text_data, int_data from "+KeyspaceName+"."+TableName+"")
 	if err != nil {
 		t.Fatal("QueryContext error: ", err)
@@ -438,7 +452,7 @@ func TestSqTruncate(t *testing.T) {
 
 func TestSqlDrop(t *testing.T) {
 	if DisableDestructiveTests {
-		return
+		t.SkipNow()
 	}
 
 	openString := TestHostValid + "?timeout=10s&connectTimeout=10s"
@@ -454,7 +468,7 @@ func TestSqlDrop(t *testing.T) {
 		t.Fatal("db is nil")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), TimeoutValid)
 	result, err := db.ExecContext(ctx, "drop table "+KeyspaceName+"."+TableName+"")
 	cancel()
 	if err != nil {
@@ -464,7 +478,7 @@ func TestSqlDrop(t *testing.T) {
 		t.Fatal("result is nil")
 	}
 
-	ctx, cancel = context.WithTimeout(context.Background(), 55*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
 	result, err = db.ExecContext(ctx, "drop keyspace "+KeyspaceName)
 	cancel()
 	if err != nil {

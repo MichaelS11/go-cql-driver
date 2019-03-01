@@ -18,3 +18,7 @@ go get github.com/MichaelS11/go-cql-driver
 A simple SQL select example can be found on the godoc
 
 https://godoc.org/github.com/MichaelS11/go-cql-driver#example-package--SqlSelect
+
+## Important note:
+
+When calling QueryContext or Query make sure to close the returned rows and check the error. Often an error will only show up after rows is closed.
