@@ -19,11 +19,11 @@ func TestRowsColumns(t *testing.T) {
 	if columns[0] != "cql_version" {
 		t.Fatalf("Columns[0] - received: %v - expected: %v ", columns[0], "cql_version")
 	}
-
 	err := rows.Close()
 	if err != nil {
 		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
 	}
+
 	err = stmt.Close()
 	if err != nil {
 		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
@@ -72,11 +72,11 @@ func TestRowsNext(t *testing.T) {
 	if len(dest) != 0 {
 		t.Fatalf("Next len - received: %v - expected: %v ", len(dest), 1)
 	}
-
 	err = rows.Close()
 	if err != nil {
 		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
 	}
+
 	err = stmt.Close()
 	if err != nil {
 		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)

@@ -21,4 +21,18 @@ https://godoc.org/github.com/MichaelS11/go-cql-driver#example-package--SqlSelect
 
 ## Important note:
 
-When calling QueryContext or Query make sure to close the returned rows and check the error. Often an error will only show up after rows is closed.
+When done with rows from QueryContext or Query, make sure to check errors from Close and Err
+```go
+	err = rows.Close()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	cancel()
+
+	err = rows.Err()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+```

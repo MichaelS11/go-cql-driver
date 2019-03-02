@@ -170,6 +170,10 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 		t.Fatal("Close error: ", err)
 	}
 	cancel()
+	err = rows.Err()
+	if err != nil {
+		t.Fatal("Err error: ", err)
+	}
 
 	// insert two
 	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
@@ -212,6 +216,10 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 		t.Fatal("Close error: ", err)
 	}
 	cancel()
+	err = rows.Err()
+	if err != nil {
+		t.Fatal("Err error: ", err)
+	}
 
 	// update two
 	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
@@ -254,6 +262,10 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 		t.Fatal("Close error: ", err)
 	}
 	cancel()
+	err = rows.Err()
+	if err != nil {
+		t.Fatal("Err error: ", err)
+	}
 
 	// delete two
 	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
@@ -283,6 +295,10 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 		t.Fatal("Close error: ", err)
 	}
 	cancel()
+	err = rows.Err()
+	if err != nil {
+		t.Fatal("Err error: ", err)
+	}
 
 	// delete two
 	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
@@ -305,6 +321,10 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 		t.Fatal("QueryContext no error")
 	}
 	cancel()
+	err = rows.Err()
+	if err != nil {
+		t.Fatal("Err error: ", err)
+	}
 
 	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
 	rows, err = db.QueryContext(ctx, "select int_data from "+KeyspaceName+"."+TableName+" where int_data = ?")
@@ -315,6 +335,10 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 		t.Fatal("QueryContext no error")
 	}
 	cancel()
+	err = rows.Err()
+	if err != nil {
+		t.Fatal("Err error: ", err)
+	}
 
 	err = db.Close()
 	if err != nil {
@@ -379,6 +403,10 @@ func TestSqlSelectLoop(t *testing.T) {
 			t.Fatal("Close error: ", err)
 		}
 		cancel()
+		err = rows.Err()
+		if err != nil {
+			t.Fatal("Err error: ", err)
+		}
 	}
 
 	err = db.Close()
@@ -433,6 +461,10 @@ func TestSqTruncate(t *testing.T) {
 		t.Fatal("Close error: ", err)
 	}
 	cancel()
+	err = rows.Err()
+	if err != nil {
+		t.Fatal("Err error: ", err)
+	}
 
 	err = db.Close()
 	if err != nil {

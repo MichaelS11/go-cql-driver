@@ -75,7 +75,12 @@ func Example_sqlSelect() {
 		fmt.Println("Close error is not nil:", err)
 		return
 	}
-	cancel()
+
+	err = rows.Err()
+	if err != nil {
+		fmt.Println("Err error is not nil:", err)
+		return
+	}
 
 	err = db.Close()
 	if err != nil {
@@ -166,7 +171,12 @@ func Example_sqlStatement() {
 		fmt.Println("Close error is not nil:", err)
 		return
 	}
-	cancel()
+
+	err = rows.Err()
+	if err != nil {
+		fmt.Println("Err error is not nil:", err)
+		return
+	}
 
 	err = db.Close()
 	if err != nil {
