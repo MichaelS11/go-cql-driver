@@ -149,7 +149,7 @@ func TestStatementExecContext(t *testing.T) {
 }
 
 func TestStatementQuery(t *testing.T) {
-	conn, stmt := testGetStatementHostValid(t, "select release_version from system.local}")
+	conn, stmt := testGetStatementHostValid(t, "select release_version from system.local")
 	if stmt == nil {
 		t.Fatal("stmt is nil")
 	}
@@ -161,6 +161,10 @@ func TestStatementQuery(t *testing.T) {
 	if rows == nil {
 		t.Fatal("rows is nil")
 	}
+	err = rows.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
 
 	rows, err = stmt.Query([]driver.Value{driver.Value(1)})
 	if err != nil {
@@ -168,6 +172,10 @@ func TestStatementQuery(t *testing.T) {
 	}
 	if rows == nil {
 		t.Fatal("rows is nil")
+	}
+	err = rows.Close()
+	if err == nil {
+		t.Fatalf("Close error expected")
 	}
 
 	err = stmt.Close()
@@ -181,7 +189,7 @@ func TestStatementQuery(t *testing.T) {
 }
 
 func TestStatementQueryContext(t *testing.T) {
-	conn, stmt := testGetStatementHostValid(t, "select release_version from system.local}")
+	conn, stmt := testGetStatementHostValid(t, "select release_version from system.local")
 	if stmt == nil {
 		t.Fatal("stmt is nil")
 	}
@@ -194,6 +202,10 @@ func TestStatementQueryContext(t *testing.T) {
 	if rows == nil {
 		t.Fatal("rows is nil")
 	}
+	err = rows.Close()
+	if err != nil {
+		t.Fatalf("Close error - received: %v - expected: %v ", err, nil)
+	}
 
 	rows, err = cqlStmt.QueryContext(context.Background(), []driver.NamedValue{{Ordinal: 1, Value: 1}})
 	if err != nil {
@@ -201,6 +213,10 @@ func TestStatementQueryContext(t *testing.T) {
 	}
 	if rows == nil {
 		t.Fatal("rows is nil")
+	}
+	err = rows.Close()
+	if err == nil {
+		t.Fatalf("Close error expected")
 	}
 
 	rows, err = cqlStmt.QueryContext(context.Background(), []driver.NamedValue{{Name: "a"}})

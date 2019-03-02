@@ -165,10 +165,6 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	if rows.Next() {
 		t.Fatal("has Next rows")
 	}
-	err = rows.Err()
-	if err != nil {
-		t.Fatal("Err error: ", err)
-	}
 	err = rows.Close()
 	if err != nil {
 		t.Fatal("Close error: ", err)
@@ -210,10 +206,6 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	}
 	if rows.Next() {
 		t.Fatal("has Next rows")
-	}
-	err = rows.Err()
-	if err != nil {
-		t.Fatal("Err error: ", err)
 	}
 	err = rows.Close()
 	if err != nil {
@@ -257,10 +249,6 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	if rows.Next() {
 		t.Fatal("has Next rows")
 	}
-	err = rows.Err()
-	if err != nil {
-		t.Fatal("Err error: ", err)
-	}
 	err = rows.Close()
 	if err != nil {
 		t.Fatal("Close error: ", err)
@@ -290,10 +278,6 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	if rows.Next() {
 		t.Fatal("has Next rows")
 	}
-	err = rows.Err()
-	if err != nil {
-		t.Fatal("Err error: ", err)
-	}
 	err = rows.Close()
 	if err != nil {
 		t.Fatal("Close error: ", err)
@@ -311,9 +295,19 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 		t.Fatal("result is nil")
 	}
 
-	// select error
+	// select errors
 	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
 	rows, err = db.QueryContext(ctx, "select int_data from "+KeyspaceName+"."+TableName+" group by int_data")
+	if err != nil {
+		t.Fatal("QueryContext error: ", err)
+	}
+	if rows.Close() == nil {
+		t.Fatal("QueryContext no error")
+	}
+	cancel()
+
+	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
+	rows, err = db.QueryContext(ctx, "select int_data from "+KeyspaceName+"."+TableName+" where int_data = ?")
 	if err != nil {
 		t.Fatal("QueryContext error: ", err)
 	}
@@ -433,10 +427,6 @@ func TestSqTruncate(t *testing.T) {
 	}
 	if rows.Next() {
 		t.Fatal("has Next rows")
-	}
-	err = rows.Err()
-	if err != nil {
-		t.Fatal("Err error: ", err)
 	}
 	err = rows.Close()
 	if err != nil {

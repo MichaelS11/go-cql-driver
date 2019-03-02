@@ -76,11 +76,6 @@ func Example_sqlConnector() {
 		return
 	}
 
-	err = rows.Err()
-	if err != nil {
-		fmt.Println("Err error is not nil:", err)
-		return
-	}
 	err = rows.Close()
 	if err != nil {
 		fmt.Println("Close error is not nil:", err)

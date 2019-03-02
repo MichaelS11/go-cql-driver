@@ -40,11 +40,15 @@ func TestClusterConfigToConfigString(t *testing.T) {
 		{info: "ConnectTimeout > 0", clusterConfig: &gocql.ClusterConfig{ConnectTimeout: 10 * time.Second}, configString: "?consistency=any&timeout=0s&connectTimeout=10s&writeCoalesceWaitTime=0s"},
 		{info: "Keyspace", clusterConfig: &gocql.ClusterConfig{Keyspace: "system"}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&keyspace=system&writeCoalesceWaitTime=0s"},
 		{info: "NumConns < 2", clusterConfig: &gocql.ClusterConfig{NumConns: 1}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=0s"},
+		{info: "NumConns > 1", clusterConfig: &gocql.ClusterConfig{NumConns: 2}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&numConns=2&writeCoalesceWaitTime=0s"},
 		{info: "IgnorePeerAddr false DisableInitialHostLookup false", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: false, DisableInitialHostLookup: false}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=0s"},
 		{info: "IgnorePeerAddr true DisableInitialHostLookup false", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: true, DisableInitialHostLookup: false}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&ignorePeerAddr=true&writeCoalesceWaitTime=0s"},
 		{info: "IgnorePeerAddr false DisableInitialHostLookup true", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: false, DisableInitialHostLookup: true}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&disableInitialHostLookup=true&writeCoalesceWaitTime=0s"},
 		{info: "IgnorePeerAddr true DisableInitialHostLookup true", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: true, DisableInitialHostLookup: true}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&ignorePeerAddr=true&disableInitialHostLookup=true&writeCoalesceWaitTime=0s"},
 		{info: "WriteCoalesceWaitTime 1s", clusterConfig: &gocql.ClusterConfig{WriteCoalesceWaitTime: time.Second}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=1s"},
+		{info: "Authenticator empty", clusterConfig: &gocql.ClusterConfig{Authenticator: gocql.PasswordAuthenticator{}}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=0s"},
+		{info: "Authenticator username", clusterConfig: &gocql.ClusterConfig{Authenticator: gocql.PasswordAuthenticator{Username: "username"}}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=0s&username=username"},
+		{info: "Authenticator username password", clusterConfig: &gocql.ClusterConfig{Authenticator: gocql.PasswordAuthenticator{Username: "username", Password: "password"}}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=0s&username=username&password=password"},
 		{info: "Host", clusterConfig: &gocql.ClusterConfig{Hosts: []string{"one"}}, configString: "one?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=0s"},
 		{info: "Hosts", clusterConfig: &gocql.ClusterConfig{Hosts: []string{"one", "two", "three"}}, configString: "one,two,three?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=0s"},
 	}
@@ -60,6 +64,7 @@ func TestConfigStringToClusterConfig(t *testing.T) {
 	tests := []TestStringToConfigStruct{
 		{info: "missing =", configString: "?consistency", err: fmt.Errorf("missing =")},
 		{info: "failed consistency", configString: "?consistency=", err: fmt.Errorf("failed for: consistency = ")},
+		{info: "failed keyspace", configString: "?keyspace=", err: fmt.Errorf("failed for: keyspace = ")},
 		{info: "failed timeout", configString: "?timeout=", err: fmt.Errorf("failed for: timeout = ")},
 		{info: "failed connectTimeout", configString: "?connectTimeout=", err: fmt.Errorf("failed for: connectTimeout = ")},
 		{info: "failed numConns", configString: "?numConns=", err: fmt.Errorf("failed for: numConns = ")},
