@@ -3,6 +3,7 @@ package cql
 import (
 	"context"
 	"database/sql"
+	"reflect"
 	"testing"
 	// "time"
 )
@@ -77,7 +78,7 @@ func TestSqlCreate(t *testing.T) {
 	// create table
 	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
 	// removed duration_data duration
-	result, err = db.ExecContext(ctx, "create table "+KeyspaceName+"."+TableName+" (text_data text PRIMARY KEY, int_data int, timestamp_data timestamp)")
+	result, err = db.ExecContext(ctx, "create table "+KeyspaceName+"."+TableName+" (text_data text PRIMARY KEY, int_data int, timestamp_data timestamp, map_data map<text, text> )")
 	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
@@ -421,6 +422,94 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 			t.Fatal("Err error: ", err)
 		}
 	*/
+
+	// insert five map
+	aMap := map[string]string{"a": "a"}
+	var ok bool
+	var text string
+	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
+	result, err = db.ExecContext(ctx, "insert into "+KeyspaceName+"."+TableName+" (text_data, map_data) values (?, ?)", "five", aMap)
+	cancel()
+	if err != nil {
+		t.Fatal("ExecContext error: ", err)
+	}
+	if result == nil {
+		t.Fatal("result is nil")
+	}
+
+	// select five map
+	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
+	rows, err = db.QueryContext(ctx, "select text_data, map_data from "+KeyspaceName+"."+TableName+" where text_data = ?", "five")
+	if err != nil {
+		t.Fatal("QueryContext error: ", err)
+	}
+	if rows == nil {
+		t.Fatal("rows is nil")
+	}
+	if !rows.Next() {
+		t.Fatal("no Next rows")
+	}
+	err = rows.Scan(destPointer...)
+	if err != nil {
+		t.Fatal("Scan error: ", err)
+	}
+	if dest[0] != "five" {
+		t.Fatalf("text_data - received: %v - expected: %v", dest[0], "five")
+	}
+	aMap, ok = dest[1].(map[string]string)
+	if !ok {
+		t.Fatalf("map_data not time, type: %T", dest[1])
+	}
+	if !reflect.DeepEqual(aMap, map[string]string{"a": "a"}) {
+		t.Fatalf("map_data - received: %v - expected: %v", aMap, map[string]string{"a": "a"})
+	}
+	if rows.Next() {
+		t.Fatal("has Next rows")
+	}
+	err = rows.Close()
+	if err != nil {
+		t.Fatal("Close error: ", err)
+	}
+	cancel()
+	err = rows.Err()
+	if err != nil {
+		t.Fatal("Err error: ", err)
+	}
+
+	// select five map
+	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
+	rows, err = db.QueryContext(ctx, "select text_data, map_data from "+KeyspaceName+"."+TableName+" where text_data = ?", "five")
+	if err != nil {
+		t.Fatal("QueryContext error: ", err)
+	}
+	if rows == nil {
+		t.Fatal("rows is nil")
+	}
+	if !rows.Next() {
+		t.Fatal("no Next rows")
+	}
+	err = rows.Scan(&text, &aMap)
+	if err != nil {
+		t.Fatal("Scan error: ", err)
+	}
+	if text != "five" {
+		t.Fatalf("text_data - received: %v - expected: %v", text, "five")
+	}
+	if !reflect.DeepEqual(aMap, map[string]string{"a": "a"}) {
+		t.Fatalf("map_data - received: %v - expected: %v", aMap, map[string]string{"a": "a"})
+	}
+	if rows.Next() {
+		t.Fatal("has Next rows")
+	}
+	err = rows.Close()
+	if err != nil {
+		t.Fatal("Close error: ", err)
+	}
+	cancel()
+	err = rows.Err()
+	if err != nil {
+		t.Fatal("Err error: ", err)
+	}
 
 	// select errors
 	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)

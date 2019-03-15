@@ -49,6 +49,8 @@ type (
 		iter    *gocql.Iter
 		columns []string
 	}
+
+	converter struct{}
 )
 
 var (

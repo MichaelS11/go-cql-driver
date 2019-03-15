@@ -3,6 +3,7 @@ package cql
 import (
 	"context"
 	"database/sql/driver"
+	"reflect"
 )
 
 // Close a statement
@@ -83,4 +84,24 @@ func (cqlStmt *CqlStmt) queryContext(ctx context.Context, values []interface{}) 
 		iter:    iter,
 		columns: columnInfoToString(iter.Columns()),
 	}, nil
+}
+
+// ColumnConverter provides driver ValueConverter for statment
+func (cqlStmt *CqlStmt) ColumnConverter(index int) driver.ValueConverter {
+	return converter{}
+}
+
+// ConvertValue coverts interface value to driver Value
+func (c converter) ConvertValue(valueInterface interface{}) (driver.Value, error) {
+	valueDriver, err := driver.DefaultParameterConverter.ConvertValue(valueInterface)
+	if err == nil {
+		return valueDriver, nil
+	}
+
+	rv := reflect.ValueOf(valueInterface)
+	if rv.Kind() == reflect.Uint64 {
+		return rv.Uint(), nil
+	}
+
+	return valueDriver, err
 }
