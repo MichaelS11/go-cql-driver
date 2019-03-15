@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"testing"
+	// "time"
 )
 
 func TestSqlOpen(t *testing.T) {
@@ -75,7 +76,8 @@ func TestSqlCreate(t *testing.T) {
 
 	// create table
 	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
-	result, err = db.ExecContext(ctx, "create table "+KeyspaceName+"."+TableName+" (text_data text PRIMARY KEY, int_data int)")
+	// removed duration_data duration
+	result, err = db.ExecContext(ctx, "create table "+KeyspaceName+"."+TableName+" (text_data text PRIMARY KEY, int_data int, timestamp_data timestamp)")
 	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
@@ -108,9 +110,19 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 		t.Fatal("db is nil")
 	}
 
-	// insert one
+	// truncate table
 	ctx, cancel := context.WithTimeout(context.Background(), TimeoutValid)
-	result, err := db.ExecContext(ctx, "insert into "+KeyspaceName+"."+TableName+" (text_data, int_data) values (?, ?)", "one", 1)
+	result, err := db.ExecContext(ctx, "truncate table "+KeyspaceName+"."+TableName)
+	if err != nil {
+		t.Fatal("ExecContext error: ", err)
+	}
+	if result == nil {
+		t.Fatal("result is nil")
+	}
+
+	// insert one
+	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
+	result, err = db.ExecContext(ctx, "insert into "+KeyspaceName+"."+TableName+" (text_data, int_data) values (?, ?)", "one", 1)
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
 	}
@@ -311,6 +323,105 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 		t.Fatal("result is nil")
 	}
 
+	/*
+		// insert three timestamp
+		ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
+		result, err = db.ExecContext(ctx, "insert into "+KeyspaceName+"."+TableName+" (text_data, timestamp_data) values (?, ?)", "three", TestTimeNow)
+		cancel()
+		if err != nil {
+			t.Fatal("ExecContext error: ", err)
+		}
+		if result == nil {
+			t.Fatal("result is nil")
+		}
+
+		// select three timestamp
+		ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
+		rows, err = db.QueryContext(ctx, "select text_data, timestamp_data from "+KeyspaceName+"."+TableName+" where text_data = ?", "three")
+		if err != nil {
+			t.Fatal("QueryContext error: ", err)
+		}
+		if rows == nil {
+			t.Fatal("rows is nil")
+		}
+		if !rows.Next() {
+			t.Fatal("no Next rows")
+		}
+		err = rows.Scan(destPointer...)
+		if err != nil {
+			t.Fatal("Scan error: ", err)
+		}
+		if dest[0] != "three" {
+			t.Fatalf("text_data - received: %v - expected: %v", dest[0], "three")
+		}
+		aTime, ok := dest[1].(time.Time)
+		if !ok {
+			t.Fatalf("timestamp_data not time, type: %T", dest[1])
+		}
+		if !aTime.Equal(TestTimeNow) {
+			t.Fatalf("timestamp_data - received: %v - expected: %v", aTime, TestTimeNow)
+		}
+		if rows.Next() {
+			t.Fatal("has Next rows")
+		}
+		err = rows.Close()
+		if err != nil {
+			t.Fatal("Close error: ", err)
+		}
+		cancel()
+		err = rows.Err()
+		if err != nil {
+			t.Fatal("Err error: ", err)
+		}
+
+		// insert four duration
+		ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
+		result, err = db.ExecContext(ctx, "insert into "+KeyspaceName+"."+TableName+" (text_data, duration_data) values (?, ?)", "four", time.Hour+time.Minute+time.Second+time.Millisecond+time.Microsecond+time.Nanosecond)
+		cancel()
+		if err != nil {
+			t.Fatal("ExecContext error: ", err)
+		}
+		if result == nil {
+			t.Fatal("result is nil")
+		}
+
+		// select four duration
+		ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
+		rows, err = db.QueryContext(ctx, "select text_data, duration_data from "+KeyspaceName+"."+TableName+" where text_data = ?", "four")
+		if err != nil {
+			t.Fatal("QueryContext error: ", err)
+		}
+		if rows == nil {
+			t.Fatal("rows is nil")
+		}
+		if !rows.Next() {
+			t.Fatal("no Next rows")
+		}
+		err = rows.Scan(destPointer...)
+		if err != nil {
+			t.Fatal("Scan error: ", err)
+		}
+		if dest[0] != "four" {
+			t.Fatalf("text_data - received: %v - expected: %v", dest[0], "four")
+		}
+		duration := InterfaceToDuration(dest[1])
+		if duration != time.Hour+time.Minute+time.Second+time.Millisecond+time.Microsecond+time.Nanosecond {
+			t.Fatalf("duration_data - received: %v - expected: %v", duration, time.Hour+time.Minute+time.Second+time.Millisecond+time.Microsecond+time.Nanosecond)
+		}
+		if rows.Next() {
+			t.Fatal("has Next rows")
+		}
+		err = rows.Close()
+		if err != nil {
+			t.Fatal("Close error: ", err)
+		}
+		cancel()
+		err = rows.Err()
+		if err != nil {
+			t.Fatal("Err error: ", err)
+		}
+	*/
+
 	// select errors
 	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
 	rows, err = db.QueryContext(ctx, "select int_data from "+KeyspaceName+"."+TableName+" group by int_data")
@@ -364,9 +475,30 @@ func TestSqlSelectLoop(t *testing.T) {
 		t.Fatal("db is nil")
 	}
 
+	// truncate table
+	ctx, cancel := context.WithTimeout(context.Background(), TimeoutValid)
+	result, err := db.ExecContext(ctx, "truncate table "+KeyspaceName+"."+TableName)
+	if err != nil {
+		t.Fatal("ExecContext error: ", err)
+	}
+	if result == nil {
+		t.Fatal("result is nil")
+	}
+
+	// insert one
+	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
+	result, err = db.ExecContext(ctx, "insert into "+KeyspaceName+"."+TableName+" (text_data, int_data) values (?, ?)", "one", 1)
+	if err != nil {
+		t.Fatal("ExecContext error: ", err)
+	}
+	if result == nil {
+		t.Fatal("result is nil")
+	}
+	cancel()
+
 	for i := 0; i < 100; i++ {
 		// select all
-		ctx, cancel := context.WithTimeout(context.Background(), TimeoutValid)
+		ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
 		rows, err := db.QueryContext(ctx, "select text_data, int_data from "+KeyspaceName+"."+TableName+"")
 		if err != nil {
 			t.Fatal("QueryContext error: ", err)

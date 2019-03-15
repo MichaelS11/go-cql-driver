@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/gocql/gocql"
 )
@@ -48,4 +49,21 @@ func interfaceToValue(sourceInterface interface{}) (driver.Value, error) {
 		return driver.Value(nil), fmt.Errorf("source is not a pointer")
 	}
 	return driver.Value(source.Elem().Interface()), nil
+}
+
+// DurationToDuration converts gocql.Duration type to time.Duration.
+// Does not check for overflow
+func DurationToDuration(cqlDuration gocql.Duration) time.Duration {
+	return (2629800000000000 * time.Duration(cqlDuration.Months)) + (86400000000000 * time.Duration(cqlDuration.Days)) + time.Duration(cqlDuration.Nanoseconds)
+}
+
+// InterfaceToDuration converts an interface of gocql.Duration type to time.Duration.
+// Does not check for overflow.
+// Returns 0 if interface is not gocql.Duration
+func InterfaceToDuration(aInterface interface{}) time.Duration {
+	cqlDuration, ok := aInterface.(gocql.Duration)
+	if !ok {
+		return time.Duration(0)
+	}
+	return (2629800000000000 * time.Duration(cqlDuration.Months)) + (86400000000000 * time.Duration(cqlDuration.Days)) + time.Duration(cqlDuration.Nanoseconds)
 }

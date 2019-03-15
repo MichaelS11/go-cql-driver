@@ -26,6 +26,7 @@ var (
 	EnableAuthentication      bool
 	Username                  string
 	Password                  string
+	TestTimeNow               time.Time
 )
 
 func TestMain(m *testing.M) {
@@ -66,7 +67,8 @@ func setupForTesting() int {
 		return 6
 	}
 
-	TableName += time.Now().UTC().Format("20060102150405")
+	TestTimeNow = time.Now().UTC().Truncate(time.Millisecond)
+	TableName += TestTimeNow.Format("20060102150405")
 
 	return 0
 }
