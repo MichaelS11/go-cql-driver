@@ -61,6 +61,21 @@ func TestClusterConfigToConfigString(t *testing.T) {
 }
 
 func TestConfigStringToClusterConfig(t *testing.T) {
+	sslOptions := gocql.SslOptions{
+		CaPath:                 "/ca/path.pem",
+		CertPath:               "/cert/path.pem",
+		KeyPath:                "/key/path.pem",
+		EnableHostVerification: true,
+	}
+	sslClusterConfig := NewClusterConfig()
+	sslClusterConfig.SslOpts = &sslOptions
+	sslConfigString := fmt.Sprintf("?certPath=%s&keyPath=%s&caPath=%s&enableHostVerification=%#v",
+		sslOptions.CertPath,
+		sslOptions.KeyPath,
+		sslOptions.CaPath,
+		sslOptions.EnableHostVerification,
+	)
+
 	tests := []TestStringToConfigStruct{
 		{info: "missing =", configString: "?consistency", err: fmt.Errorf("missing =")},
 		{info: "failed consistency", configString: "?consistency=", err: fmt.Errorf("failed for: consistency = ")},
@@ -74,6 +89,7 @@ func TestConfigStringToClusterConfig(t *testing.T) {
 		{info: "invalid key", configString: "?foo=bar", err: fmt.Errorf("invalid key: foo")},
 
 		{info: "empty", configString: "", clusterConfig: NewClusterConfig()},
+		{info: "empty", configString: sslConfigString, clusterConfig: sslClusterConfig},
 	}
 
 	tests = append(tests, TestStringToConfigStruct{info: "empty", configString: "", clusterConfig: NewClusterConfig()})
