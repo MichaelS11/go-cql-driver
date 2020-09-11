@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	TestLogStderr             = log.New(os.Stderr, "cql ", log.Ldate|log.Ltime|log.LUTC|log.Llongfile)
+	TestLogStderr             = log.New(os.Stderr, "cql ", log.Ldate|log.Ltime|log.LUTC|log.Lshortfile)
 	TestHostValid             string
 	TestHostInvalid           string
 	ConnectTimeoutValidString string
@@ -41,7 +41,7 @@ func TestMain(m *testing.M) {
 func setupForTesting() int {
 	flag.StringVar(&TestHostValid, "hostValid", "127.0.0.1", "a host where a Cassandra database is running")
 	flag.StringVar(&TestHostInvalid, "hostInvalid", "169.254.200.200", "a host where a Cassandra database is not running")
-	flag.StringVar(&ConnectTimeoutValidString, "connectTimeoutValid", "10s", "the connect timeout time duration for host valid tests (ClusterConfig.ConnectTimeout)")
+	flag.StringVar(&ConnectTimeoutValidString, "connectTimeoutValid", "20s", "the connect timeout time duration for host valid tests (ClusterConfig.ConnectTimeout)")
 	connectTimeoutInvalidString := flag.String("connectTimeoutInvalid", "1ms", "the connect timeout time duration for host invalid tests (ClusterConfig.ConnectTimeout)")
 	flag.StringVar(&TimeoutValidString, "timeoutValid", "10s", "the timeout time duration for host valid tests (ClusterConfig.Timeout)")
 	flag.BoolVar(&DisableDestructiveTests, "disableDestructiveTests", false, "set to disable the destructive database tests on cqltest keyspace")

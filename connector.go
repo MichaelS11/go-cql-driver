@@ -13,7 +13,7 @@ import (
 // NewConnector returns a new database connector
 func NewConnector(hosts ...string) driver.Connector {
 	return &CqlConnector{
-		Logger:        log.New(os.Stderr, "cql ", log.Ldate|log.Ltime|log.LUTC|log.Llongfile),
+		Logger:        log.New(os.Stderr, "cql ", log.Ldate|log.Ltime|log.LUTC|log.Lshortfile),
 		ClusterConfig: NewClusterConfig(hosts...),
 	}
 }

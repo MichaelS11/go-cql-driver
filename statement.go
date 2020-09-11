@@ -86,7 +86,7 @@ func (cqlStmt *CqlStmt) queryContext(ctx context.Context, values []interface{}) 
 	}, nil
 }
 
-// ColumnConverter provides driver ValueConverter for statment
+// ColumnConverter provides driver ValueConverter for statement
 func (cqlStmt *CqlStmt) ColumnConverter(index int) driver.ValueConverter {
 	return converter{}
 }

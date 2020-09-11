@@ -67,7 +67,7 @@ var (
 
 	// CqlDriver is the sql driver
 	CqlDriver = &CqlDriverStruct{
-		Logger: log.New(os.Stderr, "cql ", log.Ldate|log.Ltime|log.LUTC|log.Llongfile),
+		Logger: log.New(os.Stderr, "cql ", log.Ldate|log.Ltime|log.LUTC|log.Lshortfile),
 	}
 )
 
