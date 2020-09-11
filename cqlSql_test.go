@@ -114,6 +114,7 @@ func TestSqlInsertUpdateSelectDelete(t *testing.T) {
 	// truncate table
 	ctx, cancel := context.WithTimeout(context.Background(), TimeoutValid)
 	result, err := db.ExecContext(ctx, "truncate table "+KeyspaceName+"."+TableName)
+	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
 	}
@@ -567,6 +568,7 @@ func TestSqlSelectLoop(t *testing.T) {
 	// truncate table
 	ctx, cancel := context.WithTimeout(context.Background(), TimeoutValid)
 	result, err := db.ExecContext(ctx, "truncate table "+KeyspaceName+"."+TableName)
+	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
 	}
@@ -577,13 +579,13 @@ func TestSqlSelectLoop(t *testing.T) {
 	// insert one
 	ctx, cancel = context.WithTimeout(context.Background(), TimeoutValid)
 	result, err = db.ExecContext(ctx, "insert into "+KeyspaceName+"."+TableName+" (text_data, int_data) values (?, ?)", "one", 1)
+	cancel()
 	if err != nil {
 		t.Fatal("ExecContext error: ", err)
 	}
 	if result == nil {
 		t.Fatal("result is nil")
 	}
-	cancel()
 
 	for i := 0; i < 100; i++ {
 		// select all
