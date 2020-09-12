@@ -156,10 +156,11 @@ func ConfigStringToClusterConfig(configString string) (*gocql.ClusterConfig, err
 					passwordAuthenticator.Password = value
 					clusterConfig.Authenticator = passwordAuthenticator
 				case "enableHostVerification":
-					if sslOptions == nil {
-						sslOptions = &gocql.SslOptions{}
+					data, err := strconv.ParseBool(value)
+					if err != nil {
+						return nil, fmt.Errorf("failed for: %v = %v", key, value)
 					}
-					sslOptions.EnableHostVerification = (value == "true")
+					sslOptions.EnableHostVerification = data
 				case "certPath":
 					if sslOptions == nil {
 						sslOptions = &gocql.SslOptions{}
