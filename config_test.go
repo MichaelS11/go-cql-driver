@@ -60,21 +60,13 @@ func TestClusterConfigToConfigString(t *testing.T) {
 	}
 }
 
+func sslClusterConfig(sslCfg *gocql.SslOptions) *gocql.ClusterConfig {
+	cfg := NewClusterConfig()
+	cfg.SslOpts = sslCfg
+	return cfg
+}
+
 func TestConfigStringToClusterConfig(t *testing.T) {
-	sslOptions := gocql.SslOptions{
-		CaPath:                 "/ca/path.pem",
-		CertPath:               "/cert/path.pem",
-		KeyPath:                "/key/path.pem",
-		EnableHostVerification: true,
-	}
-	sslClusterConfig := NewClusterConfig()
-	sslClusterConfig.SslOpts = &sslOptions
-	sslConfigString := fmt.Sprintf("?certPath=%s&keyPath=%s&caPath=%s&enableHostVerification=%#v",
-		sslOptions.CertPath,
-		sslOptions.KeyPath,
-		sslOptions.CaPath,
-		sslOptions.EnableHostVerification,
-	)
 
 	tests := []TestStringToConfigStruct{
 		{info: "missing =", configString: "?consistency", err: fmt.Errorf("missing =")},
@@ -87,9 +79,15 @@ func TestConfigStringToClusterConfig(t *testing.T) {
 		{info: "failed disableInitialHostLookup", configString: "?disableInitialHostLookup=", err: fmt.Errorf("failed for: disableInitialHostLookup = ")},
 		{info: "failed writeCoalesceWaitTime", configString: "?writeCoalesceWaitTime=", err: fmt.Errorf("failed for: writeCoalesceWaitTime = ")},
 		{info: "invalid key", configString: "?foo=bar", err: fmt.Errorf("invalid key: foo")},
+		{info: "failed enableHostVerification", configString: "?enableHostVerification=", err: fmt.Errorf("failed for: enableHostVerification = ")},
 
 		{info: "empty", configString: "", clusterConfig: NewClusterConfig()},
-		{info: "empty", configString: sslConfigString, clusterConfig: sslClusterConfig},
+		{info: "empty", configString: "?caPath=/path.pem", clusterConfig: sslClusterConfig(&gocql.SslOptions{CaPath: "/path.pem"})},
+		{info: "empty", configString: "?certPath=/path.pem", clusterConfig: sslClusterConfig(&gocql.SslOptions{CertPath: "/path.pem"})},
+		{info: "empty", configString: "?keyPath=/path.pem", clusterConfig: sslClusterConfig(&gocql.SslOptions{KeyPath: "/path.pem"})},
+		{info: "empty", configString: "?enableHostVerification=1", clusterConfig: sslClusterConfig(&gocql.SslOptions{EnableHostVerification: true})},
+		{info: "empty", configString: "?enableHostVerification=true", clusterConfig: sslClusterConfig(&gocql.SslOptions{EnableHostVerification: true})},
+		{info: "empty", configString: "?enableHostVerification=t", clusterConfig: sslClusterConfig(&gocql.SslOptions{EnableHostVerification: true})},
 	}
 
 	tests = append(tests, TestStringToConfigStruct{info: "empty", configString: "", clusterConfig: NewClusterConfig()})
