@@ -84,7 +84,7 @@ func ConfigStringToClusterConfig(configString string) (*gocql.ClusterConfig, err
 	}
 
 	passwordAuthenticator := gocql.PasswordAuthenticator{}
-	var sslOptions *gocql.SslOptions
+	sslOpts := gocql.SslOptions{}
 
 	if len(configStringSplit) > 1 && len(configStringSplit[1]) > 1 {
 		dataSplit := strings.Split(configStringSplit[1], "&")
@@ -160,22 +160,17 @@ func ConfigStringToClusterConfig(configString string) (*gocql.ClusterConfig, err
 					if err != nil {
 						return nil, fmt.Errorf("failed for: %v = %v", key, value)
 					}
-					sslOptions.EnableHostVerification = data
+					sslOpts.EnableHostVerification = data
+					clusterConfig.SslOpts = &sslOpts
 				case "certPath":
-					if sslOptions == nil {
-						sslOptions = &gocql.SslOptions{}
-					}
-					sslOptions.CertPath = value
+					sslOpts.CertPath = value
+					clusterConfig.SslOpts = &sslOpts
 				case "keyPath":
-					if sslOptions == nil {
-						sslOptions = &gocql.SslOptions{}
-					}
-					sslOptions.KeyPath = value
+					sslOpts.KeyPath = value
+					clusterConfig.SslOpts = &sslOpts
 				case "caPath":
-					if sslOptions == nil {
-						sslOptions = &gocql.SslOptions{}
-					}
-					sslOptions.CaPath = value
+					sslOpts.CaPath = value
+					clusterConfig.SslOpts = &sslOpts
 				default:
 					return nil, fmt.Errorf("invalid key: %v", key)
 				}
@@ -183,6 +178,5 @@ func ConfigStringToClusterConfig(configString string) (*gocql.ClusterConfig, err
 		}
 	}
 
-	clusterConfig.SslOpts = sslOptions
 	return clusterConfig, nil
 }
