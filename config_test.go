@@ -82,9 +82,9 @@ func TestConfigStringToClusterConfig(t *testing.T) {
 		{info: "failed enableHostVerification", configString: "?enableHostVerification=", err: fmt.Errorf("failed for: enableHostVerification = ")},
 
 		{info: "empty", configString: "", clusterConfig: NewClusterConfig()},
-		{info: "empty", configString: "?caPath=/path.pem", clusterConfig: sslClusterConfig(&gocql.SslOptions{CaPath: "/path.pem"})},
-		{info: "empty", configString: "?certPath=/path.pem", clusterConfig: sslClusterConfig(&gocql.SslOptions{CertPath: "/path.pem"})},
-		{info: "empty", configString: "?keyPath=/path.pem", clusterConfig: sslClusterConfig(&gocql.SslOptions{KeyPath: "/path.pem"})},
+		{info: "empty", configString: "?caPath=/some%20path.pem", clusterConfig: sslClusterConfig(&gocql.SslOptions{CaPath: "/some path.pem"})},
+		{info: "empty", configString: "?certPath=/some+path.pem", clusterConfig: sslClusterConfig(&gocql.SslOptions{CertPath: "/some path.pem"})},
+		{info: "empty", configString: "?keyPath=/some path.pem", clusterConfig: sslClusterConfig(&gocql.SslOptions{KeyPath: "/some path.pem"})},
 		{info: "empty", configString: "?enableHostVerification=1", clusterConfig: sslClusterConfig(&gocql.SslOptions{EnableHostVerification: true})},
 		{info: "empty", configString: "?enableHostVerification=true", clusterConfig: sslClusterConfig(&gocql.SslOptions{EnableHostVerification: true})},
 		{info: "empty", configString: "?enableHostVerification=t", clusterConfig: sslClusterConfig(&gocql.SslOptions{EnableHostVerification: true})},

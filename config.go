@@ -2,6 +2,7 @@ package cql
 
 import (
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -94,7 +95,11 @@ func ConfigStringToClusterConfig(configString string) (*gocql.ClusterConfig, err
 				if len(settingSplit) != 2 {
 					return nil, fmt.Errorf("missing =")
 				}
-				key, value := strings.TrimSpace(settingSplit[0]), strings.TrimSpace(settingSplit[1])
+				key, rawValue := strings.TrimSpace(settingSplit[0]), settingSplit[1]
+				value, err := url.QueryUnescape(rawValue)
+				if err != nil {
+					return nil, fmt.Errorf("failed for: %v = %v", key, rawValue)
+				}
 				switch key {
 				case "consistency":
 					consistency, ok := DbConsistencyLevels[value]
