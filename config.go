@@ -66,6 +66,22 @@ func ClusterConfigToConfigString(clusterConfig *gocql.ClusterConfig) string {
 		}
 	}
 
+	if sslOpts := clusterConfig.SslOpts; sslOpts != nil {
+		defaultSslOpts := gocql.SslOptions{}
+		if s := strconv.FormatBool(sslOpts.EnableHostVerification); sslOpts.EnableHostVerification != defaultSslOpts.EnableHostVerification {
+			stringConfig += "enableHostVerification=" + s + "&"
+		}
+		if s := sslOpts.KeyPath; sslOpts.KeyPath != defaultSslOpts.KeyPath {
+			stringConfig += "keyPath=" + url.QueryEscape(s) + "&"
+		}
+		if s := sslOpts.CertPath; sslOpts.CertPath != defaultSslOpts.CertPath {
+			stringConfig += "certPath=" + url.QueryEscape(s) + "&"
+		}
+		if s := sslOpts.CaPath; sslOpts.CaPath != defaultSslOpts.CaPath {
+			stringConfig += "caPath=" + url.QueryEscape(s) + "&"
+		}
+	}
+
 	return stringConfig[:len(stringConfig)-1]
 }
 

@@ -51,6 +51,12 @@ func TestClusterConfigToConfigString(t *testing.T) {
 		{info: "Authenticator username password", clusterConfig: &gocql.ClusterConfig{Authenticator: gocql.PasswordAuthenticator{Username: "username", Password: "password"}}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=0s&username=username&password=password"},
 		{info: "Host", clusterConfig: &gocql.ClusterConfig{Hosts: []string{"one"}}, configString: "one?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=0s"},
 		{info: "Hosts", clusterConfig: &gocql.ClusterConfig{Hosts: []string{"one", "two", "three"}}, configString: "one,two,three?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=0s"},
+		{info: "SslOptions empty", clusterConfig: cfgWithSsl(&gocql.SslOptions{}), configString: "127.0.0.1?timeout=600ms&connectTimeout=600ms&numConns=2"},
+		{info: "SslOptions caPath", clusterConfig: cfgWithSsl(&gocql.SslOptions{CaPath: "/some path.pem"}), configString: "127.0.0.1?timeout=600ms&connectTimeout=600ms&numConns=2&caPath=%2Fsome+path.pem"},
+		{info: "SslOptions keyPath", clusterConfig: cfgWithSsl(&gocql.SslOptions{KeyPath: "/some+path.pem"}), configString: "127.0.0.1?timeout=600ms&connectTimeout=600ms&numConns=2&keyPath=%2Fsome%2Bpath.pem"},
+		{info: "SslOptions certPath", clusterConfig: cfgWithSsl(&gocql.SslOptions{CertPath: "/some path.pem"}), configString: "127.0.0.1?timeout=600ms&connectTimeout=600ms&numConns=2&certPath=%2Fsome+path.pem"},
+		{info: "SslOptions enableHostVerification", clusterConfig: cfgWithSsl(&gocql.SslOptions{EnableHostVerification: true}), configString: "127.0.0.1?timeout=600ms&connectTimeout=600ms&numConns=2&enableHostVerification=true"},
+		{info: "SslOptions caPath keyPath certPath enableHostVerification", clusterConfig: cfgWithSsl(&gocql.SslOptions{CaPath: "/some path.pem", KeyPath: "/some+path.pem", CertPath: "/some path.pem", EnableHostVerification: true}), configString: "127.0.0.1?timeout=600ms&connectTimeout=600ms&numConns=2&enableHostVerification=true&keyPath=%2Fsome%2Bpath.pem&certPath=%2Fsome+path.pem&caPath=%2Fsome+path.pem"},
 	}
 	for _, test := range tests {
 		configString := ClusterConfigToConfigString(test.clusterConfig)
