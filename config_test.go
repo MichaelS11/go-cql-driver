@@ -113,17 +113,8 @@ func TestConfigStringToClusterConfig(t *testing.T) {
 		{info: "empty ok keyPath", configString: "?keyPath=", clusterConfig: cfgWithSsl(&gocql.SslOptions{})},
 
 		// QueryUnescape
-		{info: "failed QueryUnescape consistency", configString: "?consistency=%GG", err: fmt.Errorf("failed for: consistency = %%GG")},
-		{info: "failed QueryUnescape keyspace", configString: "?keyspace=%GG", err: fmt.Errorf("failed for: keyspace = %%GG")},
-		{info: "failed QueryUnescape timeout", configString: "?timeout=%GG", err: fmt.Errorf("failed for: timeout = %%GG")},
-		{info: "failed QueryUnescape connectTimeout", configString: "?connectTimeout=%GG", err: fmt.Errorf("failed for: connectTimeout = %%GG")},
-		{info: "failed QueryUnescape numConns", configString: "?numConns=%GG", err: fmt.Errorf("failed for: numConns = %%GG")},
-		{info: "failed QueryUnescape ignorePeerAddr", configString: "?ignorePeerAddr=%GG", err: fmt.Errorf("failed for: ignorePeerAddr = %%GG")},
-		{info: "failed QueryUnescape disableInitialHostLookup", configString: "?disableInitialHostLookup=%GG", err: fmt.Errorf("failed for: disableInitialHostLookup = %%GG")},
-		{info: "failed QueryUnescape writeCoalesceWaitTime", configString: "?writeCoalesceWaitTime=%GG", err: fmt.Errorf("failed for: writeCoalesceWaitTime = %%GG")},
 		{info: "failed QueryUnescape username", configString: "?username=%GG", err: fmt.Errorf("failed for: username = %%GG")},
 		{info: "failed QueryUnescape password", configString: "?password=%GG", err: fmt.Errorf("failed for: password = %%GG")},
-		{info: "failed QueryUnescape enableHostVerification", configString: "?enableHostVerification=%GG", err: fmt.Errorf("failed for: enableHostVerification = %%GG")},
 		{info: "failed QueryUnescape caPath", configString: "?caPath=%GG", err: fmt.Errorf("failed for: caPath = %%GG")},
 		{info: "failed QueryUnescape certPath", configString: "?certPath=%GG", err: fmt.Errorf("failed for: certPath = %%GG")},
 		{info: "failed QueryUnescape keyPath", configString: "?keyPath=%GG", err: fmt.Errorf("failed for: keyPath = %%GG")},

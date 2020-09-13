@@ -95,11 +95,7 @@ func ConfigStringToClusterConfig(configString string) (*gocql.ClusterConfig, err
 				if len(settingSplit) != 2 {
 					return nil, fmt.Errorf("missing =")
 				}
-				key, rawValue := strings.TrimSpace(settingSplit[0]), settingSplit[1]
-				value, err := url.QueryUnescape(rawValue)
-				if err != nil {
-					return nil, fmt.Errorf("failed for: %v = %v", key, rawValue)
-				}
+				key, value := strings.TrimSpace(settingSplit[0]), settingSplit[1]
 				switch key {
 				case "consistency":
 					consistency, ok := DbConsistencyLevels[value]
@@ -155,10 +151,18 @@ func ConfigStringToClusterConfig(configString string) (*gocql.ClusterConfig, err
 					}
 					clusterConfig.WriteCoalesceWaitTime = data
 				case "username":
-					passwordAuthenticator.Username = value
+					data, err := url.QueryUnescape(value)
+					if err != nil {
+						return nil, fmt.Errorf("failed for: %v = %v", key, value)
+					}
+					passwordAuthenticator.Username = data
 					clusterConfig.Authenticator = passwordAuthenticator
 				case "password":
-					passwordAuthenticator.Password = value
+					data, err := url.QueryUnescape(value)
+					if err != nil {
+						return nil, fmt.Errorf("failed for: %v = %v", key, value)
+					}
+					passwordAuthenticator.Password = data
 					clusterConfig.Authenticator = passwordAuthenticator
 				case "enableHostVerification":
 					data, err := strconv.ParseBool(value)
@@ -168,13 +172,25 @@ func ConfigStringToClusterConfig(configString string) (*gocql.ClusterConfig, err
 					sslOpts.EnableHostVerification = data
 					clusterConfig.SslOpts = &sslOpts
 				case "certPath":
-					sslOpts.CertPath = value
+					data, err := url.QueryUnescape(value)
+					if err != nil {
+						return nil, fmt.Errorf("failed for: %v = %v", key, value)
+					}
+					sslOpts.CertPath = data
 					clusterConfig.SslOpts = &sslOpts
 				case "keyPath":
-					sslOpts.KeyPath = value
+					data, err := url.QueryUnescape(value)
+					if err != nil {
+						return nil, fmt.Errorf("failed for: %v = %v", key, value)
+					}
+					sslOpts.KeyPath = data
 					clusterConfig.SslOpts = &sslOpts
 				case "caPath":
-					sslOpts.CaPath = value
+					data, err := url.QueryUnescape(value)
+					if err != nil {
+						return nil, fmt.Errorf("failed for: %v = %v", key, value)
+					}
+					sslOpts.CaPath = data
 					clusterConfig.SslOpts = &sslOpts
 				default:
 					return nil, fmt.Errorf("invalid key: %v", key)
