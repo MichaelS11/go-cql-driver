@@ -2,6 +2,7 @@ package cql
 
 import (
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -57,11 +58,27 @@ func ClusterConfigToConfigString(clusterConfig *gocql.ClusterConfig) string {
 		passwordAuthenticator, ok := clusterConfig.Authenticator.(gocql.PasswordAuthenticator)
 		if ok {
 			if passwordAuthenticator.Username != "" {
-				stringConfig += "username=" + passwordAuthenticator.Username + "&"
+				stringConfig += "username=" + url.QueryEscape(passwordAuthenticator.Username) + "&"
 			}
 			if passwordAuthenticator.Password != "" {
-				stringConfig += "password=" + passwordAuthenticator.Password + "&"
+				stringConfig += "password=" + url.QueryEscape(passwordAuthenticator.Password) + "&"
 			}
+		}
+	}
+
+	if sslOpts := clusterConfig.SslOpts; sslOpts != nil {
+		defaultSslOpts := gocql.SslOptions{}
+		if s := strconv.FormatBool(sslOpts.EnableHostVerification); sslOpts.EnableHostVerification != defaultSslOpts.EnableHostVerification {
+			stringConfig += "enableHostVerification=" + s + "&"
+		}
+		if s := sslOpts.KeyPath; sslOpts.KeyPath != defaultSslOpts.KeyPath {
+			stringConfig += "keyPath=" + url.QueryEscape(s) + "&"
+		}
+		if s := sslOpts.CertPath; sslOpts.CertPath != defaultSslOpts.CertPath {
+			stringConfig += "certPath=" + url.QueryEscape(s) + "&"
+		}
+		if s := sslOpts.CaPath; sslOpts.CaPath != defaultSslOpts.CaPath {
+			stringConfig += "caPath=" + url.QueryEscape(s) + "&"
 		}
 	}
 
@@ -84,6 +101,7 @@ func ConfigStringToClusterConfig(configString string) (*gocql.ClusterConfig, err
 	}
 
 	passwordAuthenticator := gocql.PasswordAuthenticator{}
+	sslOpts := gocql.SslOptions{}
 
 	if len(configStringSplit) > 1 && len(configStringSplit[1]) > 1 {
 		dataSplit := strings.Split(configStringSplit[1], "&")
@@ -93,7 +111,7 @@ func ConfigStringToClusterConfig(configString string) (*gocql.ClusterConfig, err
 				if len(settingSplit) != 2 {
 					return nil, fmt.Errorf("missing =")
 				}
-				key, value := strings.TrimSpace(settingSplit[0]), strings.TrimSpace(settingSplit[1])
+				key, value := strings.TrimSpace(settingSplit[0]), settingSplit[1]
 				switch key {
 				case "consistency":
 					consistency, ok := DbConsistencyLevels[value]
@@ -149,11 +167,47 @@ func ConfigStringToClusterConfig(configString string) (*gocql.ClusterConfig, err
 					}
 					clusterConfig.WriteCoalesceWaitTime = data
 				case "username":
-					passwordAuthenticator.Username = value
+					data, err := url.QueryUnescape(value)
+					if err != nil {
+						return nil, fmt.Errorf("failed for: %v = %v", key, value)
+					}
+					passwordAuthenticator.Username = data
 					clusterConfig.Authenticator = passwordAuthenticator
 				case "password":
-					passwordAuthenticator.Password = value
+					data, err := url.QueryUnescape(value)
+					if err != nil {
+						return nil, fmt.Errorf("failed for: %v = %v", key, value)
+					}
+					passwordAuthenticator.Password = data
 					clusterConfig.Authenticator = passwordAuthenticator
+				case "enableHostVerification":
+					data, err := strconv.ParseBool(value)
+					if err != nil {
+						return nil, fmt.Errorf("failed for: %v = %v", key, value)
+					}
+					sslOpts.EnableHostVerification = data
+					clusterConfig.SslOpts = &sslOpts
+				case "certPath":
+					data, err := url.QueryUnescape(value)
+					if err != nil {
+						return nil, fmt.Errorf("failed for: %v = %v", key, value)
+					}
+					sslOpts.CertPath = data
+					clusterConfig.SslOpts = &sslOpts
+				case "keyPath":
+					data, err := url.QueryUnescape(value)
+					if err != nil {
+						return nil, fmt.Errorf("failed for: %v = %v", key, value)
+					}
+					sslOpts.KeyPath = data
+					clusterConfig.SslOpts = &sslOpts
+				case "caPath":
+					data, err := url.QueryUnescape(value)
+					if err != nil {
+						return nil, fmt.Errorf("failed for: %v = %v", key, value)
+					}
+					sslOpts.CaPath = data
+					clusterConfig.SslOpts = &sslOpts
 				default:
 					return nil, fmt.Errorf("invalid key: %v", key)
 				}

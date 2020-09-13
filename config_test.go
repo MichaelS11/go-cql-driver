@@ -47,10 +47,16 @@ func TestClusterConfigToConfigString(t *testing.T) {
 		{info: "IgnorePeerAddr true DisableInitialHostLookup true", clusterConfig: &gocql.ClusterConfig{IgnorePeerAddr: true, DisableInitialHostLookup: true}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&ignorePeerAddr=true&disableInitialHostLookup=true&writeCoalesceWaitTime=0s"},
 		{info: "WriteCoalesceWaitTime 1s", clusterConfig: &gocql.ClusterConfig{WriteCoalesceWaitTime: time.Second}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=1s"},
 		{info: "Authenticator empty", clusterConfig: &gocql.ClusterConfig{Authenticator: gocql.PasswordAuthenticator{}}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=0s"},
-		{info: "Authenticator username", clusterConfig: &gocql.ClusterConfig{Authenticator: gocql.PasswordAuthenticator{Username: "username"}}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=0s&username=username"},
-		{info: "Authenticator username password", clusterConfig: &gocql.ClusterConfig{Authenticator: gocql.PasswordAuthenticator{Username: "username", Password: "password"}}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=0s&username=username&password=password"},
+		{info: "Authenticator username", clusterConfig: &gocql.ClusterConfig{Authenticator: gocql.PasswordAuthenticator{Username: "alice@bob.com"}}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=0s&username=alice%40bob.com"},
+		{info: "Authenticator username password", clusterConfig: &gocql.ClusterConfig{Authenticator: gocql.PasswordAuthenticator{Username: "alice@bob.com", Password: "top$ecret"}}, configString: "?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=0s&username=alice%40bob.com&password=top%24ecret"},
 		{info: "Host", clusterConfig: &gocql.ClusterConfig{Hosts: []string{"one"}}, configString: "one?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=0s"},
 		{info: "Hosts", clusterConfig: &gocql.ClusterConfig{Hosts: []string{"one", "two", "three"}}, configString: "one,two,three?consistency=any&timeout=0s&connectTimeout=0s&writeCoalesceWaitTime=0s"},
+		{info: "SslOptions empty", clusterConfig: cfgWithSsl(&gocql.SslOptions{}), configString: "127.0.0.1?timeout=600ms&connectTimeout=600ms&numConns=2"},
+		{info: "SslOptions caPath", clusterConfig: cfgWithSsl(&gocql.SslOptions{CaPath: "/some path.pem"}), configString: "127.0.0.1?timeout=600ms&connectTimeout=600ms&numConns=2&caPath=%2Fsome+path.pem"},
+		{info: "SslOptions keyPath", clusterConfig: cfgWithSsl(&gocql.SslOptions{KeyPath: "/some+path.pem"}), configString: "127.0.0.1?timeout=600ms&connectTimeout=600ms&numConns=2&keyPath=%2Fsome%2Bpath.pem"},
+		{info: "SslOptions certPath", clusterConfig: cfgWithSsl(&gocql.SslOptions{CertPath: "/some path.pem"}), configString: "127.0.0.1?timeout=600ms&connectTimeout=600ms&numConns=2&certPath=%2Fsome+path.pem"},
+		{info: "SslOptions enableHostVerification", clusterConfig: cfgWithSsl(&gocql.SslOptions{EnableHostVerification: true}), configString: "127.0.0.1?timeout=600ms&connectTimeout=600ms&numConns=2&enableHostVerification=true"},
+		{info: "SslOptions caPath keyPath certPath enableHostVerification", clusterConfig: cfgWithSsl(&gocql.SslOptions{CaPath: "/some path.pem", KeyPath: "/some+path.pem", CertPath: "/some path.pem", EnableHostVerification: true}), configString: "127.0.0.1?timeout=600ms&connectTimeout=600ms&numConns=2&enableHostVerification=true&keyPath=%2Fsome%2Bpath.pem&certPath=%2Fsome+path.pem&caPath=%2Fsome+path.pem"},
 	}
 	for _, test := range tests {
 		configString := ClusterConfigToConfigString(test.clusterConfig)
@@ -60,54 +66,104 @@ func TestClusterConfigToConfigString(t *testing.T) {
 	}
 }
 
+func cfgWith(customize func(*gocql.ClusterConfig)) *gocql.ClusterConfig {
+	cfg := NewClusterConfig()
+	customize(cfg)
+	return cfg
+}
+
+func cfgWithAuth(auth gocql.PasswordAuthenticator) *gocql.ClusterConfig {
+	cfg := NewClusterConfig()
+	cfg.Authenticator = auth
+	return cfg
+}
+
+func cfgWithSsl(sslCfg *gocql.SslOptions) *gocql.ClusterConfig {
+	cfg := NewClusterConfig()
+	cfg.SslOpts = sslCfg
+	return cfg
+}
+
 func TestConfigStringToClusterConfig(t *testing.T) {
 	tests := []TestStringToConfigStruct{
-		{info: "missing =", configString: "?consistency", err: fmt.Errorf("missing =")},
-		{info: "failed consistency", configString: "?consistency=", err: fmt.Errorf("failed for: consistency = ")},
-		{info: "failed keyspace", configString: "?keyspace=", err: fmt.Errorf("failed for: keyspace = ")},
-		{info: "failed timeout", configString: "?timeout=", err: fmt.Errorf("failed for: timeout = ")},
-		{info: "failed connectTimeout", configString: "?connectTimeout=", err: fmt.Errorf("failed for: connectTimeout = ")},
-		{info: "failed numConns", configString: "?numConns=", err: fmt.Errorf("failed for: numConns = ")},
-		{info: "failed ignorePeerAddr", configString: "?ignorePeerAddr=", err: fmt.Errorf("failed for: ignorePeerAddr = ")},
-		{info: "failed disableInitialHostLookup", configString: "?disableInitialHostLookup=", err: fmt.Errorf("failed for: disableInitialHostLookup = ")},
-		{info: "failed writeCoalesceWaitTime", configString: "?writeCoalesceWaitTime=", err: fmt.Errorf("failed for: writeCoalesceWaitTime = ")},
-		{info: "invalid key", configString: "?foo=bar", err: fmt.Errorf("invalid key: foo")},
+		// Missing `=`
+		{info: "missing '=' consistency", configString: "?consistency", err: fmt.Errorf("missing =")},
+		{info: "missing '=' keyspace", configString: "?keyspace", err: fmt.Errorf("missing =")},
+		{info: "missing '=' timeout", configString: "?timeout", err: fmt.Errorf("missing =")},
+		{info: "missing '=' connectTimeout", configString: "?connectTimeout", err: fmt.Errorf("missing =")},
+		{info: "missing '=' numConns", configString: "?numConns", err: fmt.Errorf("missing =")},
+		{info: "missing '=' ignorePeerAddr", configString: "?ignorePeerAddr", err: fmt.Errorf("missing =")},
+		{info: "missing '=' disableInitialHostLookup", configString: "?disableInitialHostLookup", err: fmt.Errorf("missing =")},
+		{info: "missing '=' writeCoalesceWaitTime", configString: "?writeCoalesceWaitTime", err: fmt.Errorf("missing =")},
+		{info: "missing '=' username", configString: "?username", err: fmt.Errorf("missing =")},
+		{info: "missing '=' password", configString: "?password", err: fmt.Errorf("missing =")},
+		{info: "missing '=' enableHostVerification", configString: "?enableHostVerification", err: fmt.Errorf("missing =")},
+		{info: "missing '=' caPath", configString: "?caPath", err: fmt.Errorf("missing =")},
+		{info: "missing '=' certPath", configString: "?certPath", err: fmt.Errorf("missing =")},
+		{info: "missing '=' keyPath", configString: "?keyPath", err: fmt.Errorf("missing =")},
 
+		// Missing value
+		{info: "empty consistency", configString: "?consistency=", err: fmt.Errorf("failed for: consistency = ")},
+		{info: "empty keyspace", configString: "?keyspace=", err: fmt.Errorf("failed for: keyspace = ")},
+		{info: "empty timeout", configString: "?timeout=", err: fmt.Errorf("failed for: timeout = ")},
+		{info: "empty connectTimeout", configString: "?connectTimeout=", err: fmt.Errorf("failed for: connectTimeout = ")},
+		{info: "empty numConns", configString: "?numConns=", err: fmt.Errorf("failed for: numConns = ")},
+		{info: "empty ignorePeerAddr", configString: "?ignorePeerAddr=", err: fmt.Errorf("failed for: ignorePeerAddr = ")},
+		{info: "empty disableInitialHostLookup", configString: "?disableInitialHostLookup=", err: fmt.Errorf("failed for: disableInitialHostLookup = ")},
+		{info: "empty writeCoalesceWaitTime", configString: "?writeCoalesceWaitTime=", err: fmt.Errorf("failed for: writeCoalesceWaitTime = ")},
+		{info: "empty ok username", configString: "?username=", clusterConfig: cfgWithAuth(gocql.PasswordAuthenticator{})},
+		{info: "empty ok password", configString: "?password=", clusterConfig: cfgWithAuth(gocql.PasswordAuthenticator{})},
+		{info: "empty enableHostVerification", configString: "?enableHostVerification=", err: fmt.Errorf("failed for: enableHostVerification = ")},
+		{info: "empty ok caPath", configString: "?caPath=", clusterConfig: cfgWithSsl(&gocql.SslOptions{})},
+		{info: "empty ok certPath", configString: "?certPath=", clusterConfig: cfgWithSsl(&gocql.SslOptions{})},
+		{info: "empty ok keyPath", configString: "?keyPath=", clusterConfig: cfgWithSsl(&gocql.SslOptions{})},
+
+		// QueryUnescape
+		{info: "failed QueryUnescape username", configString: "?username=%GG", err: fmt.Errorf("failed for: username = %%GG")},
+		{info: "failed QueryUnescape password", configString: "?password=%GG", err: fmt.Errorf("failed for: password = %%GG")},
+		{info: "failed QueryUnescape caPath", configString: "?caPath=%GG", err: fmt.Errorf("failed for: caPath = %%GG")},
+		{info: "failed QueryUnescape certPath", configString: "?certPath=%GG", err: fmt.Errorf("failed for: certPath = %%GG")},
+		{info: "failed QueryUnescape keyPath", configString: "?keyPath=%GG", err: fmt.Errorf("failed for: keyPath = %%GG")},
+
+		// ParseBool
+		{info: "failed ParseBool ignorePeerAddr", configString: "?ignorePeerAddr=foobar", err: fmt.Errorf("failed for: ignorePeerAddr = foobar")},
+		{info: "failed ParseBool disableInitialHostLookup", configString: "?disableInitialHostLookup=foobar", err: fmt.Errorf("failed for: disableInitialHostLookup = foobar")},
+		{info: "failed ParseBool enableHostVerification", configString: "?enableHostVerification=foobar", err: fmt.Errorf("failed for: enableHostVerification = foobar")},
+
+		// ParseDuration
+		{info: "failed ParseDuration timeout", configString: "?timeout=42", err: fmt.Errorf("failed for: timeout = 42")},
+		{info: "failed ParseDuration connectTimeout", configString: "?connectTimeout=42", err: fmt.Errorf("failed for: connectTimeout = 42")},
+		{info: "failed ParseDuration writeCoalesceWaitTime", configString: "?writeCoalesceWaitTime=42", err: fmt.Errorf("failed for: writeCoalesceWaitTime = 42")},
+
+		// Non errors
 		{info: "empty", configString: "", clusterConfig: NewClusterConfig()},
+		{info: "Consistency any", configString: "?consistency=any", clusterConfig: cfgWith(func(cfg *gocql.ClusterConfig) { cfg.Consistency = 0 })},
+		{info: "Consistency one", configString: "?consistency=one", clusterConfig: cfgWith(func(cfg *gocql.ClusterConfig) { cfg.Consistency = 1 })},
+		{info: "Timeout < 0", configString: "?timeout=-1s", clusterConfig: NewClusterConfig()},
+		{info: "Timeout > 0", configString: "?timeout=1s", clusterConfig: cfgWith(func(cfg *gocql.ClusterConfig) { cfg.Timeout = time.Second })},
+		{info: "ConnectTimeout < 0", configString: "?connectTimeout=-1s", clusterConfig: NewClusterConfig()},
+		{info: "ConnectTimeout > 0", configString: "?connectTimeout=1s", clusterConfig: cfgWith(func(cfg *gocql.ClusterConfig) { cfg.ConnectTimeout = time.Second })},
+		{info: "Keyspace", configString: "?keyspace=system", clusterConfig: cfgWith(func(cfg *gocql.ClusterConfig) { cfg.Keyspace = "system" })},
+		{info: "NumConns < 1", configString: "?numConns=0", clusterConfig: NewClusterConfig()},
+		{info: "NumConns > 1", configString: "?numConns=2", clusterConfig: cfgWith(func(cfg *gocql.ClusterConfig) { cfg.NumConns = 2 })},
+		{info: "IgnorePeerAddr true", configString: "?ignorePeerAddr=true", clusterConfig: cfgWith(func(cfg *gocql.ClusterConfig) { cfg.IgnorePeerAddr = true })},
+		{info: "DisableInitialHostLookup true", configString: "?disableInitialHostLookup=true", clusterConfig: cfgWith(func(cfg *gocql.ClusterConfig) { cfg.DisableInitialHostLookup = true })},
+		{info: "WriteCoalesceWaitTime 1s", configString: "?writeCoalesceWaitTime=1s", clusterConfig: cfgWith(func(cfg *gocql.ClusterConfig) { cfg.WriteCoalesceWaitTime = time.Second })},
+		{info: "Host", configString: "one", clusterConfig: cfgWith(func(cfg *gocql.ClusterConfig) { cfg.Hosts = []string{"one"} })},
+		{info: "Hosts", configString: "one,two,three", clusterConfig: cfgWith(func(cfg *gocql.ClusterConfig) { cfg.Hosts = []string{"one", "two", "three"} })},
+		{info: "Host & Consistency any", configString: "one?consistency=any", clusterConfig: cfgWith(func(cfg *gocql.ClusterConfig) { cfg.Consistency = 0; cfg.Hosts = []string{"one"} })},
+		{info: "Hosts & Consistency one", configString: "one,two,three?consistency=one", clusterConfig: cfgWith(func(cfg *gocql.ClusterConfig) { cfg.Consistency = 1; cfg.Hosts = []string{"one", "two", "three"} })},
+		// - optional PasswordAuthenticator
+		{info: "PasswordAuthenticator Username", configString: "?username=alice%40bob.com", clusterConfig: cfgWithAuth(gocql.PasswordAuthenticator{Username: "alice@bob.com"})},
+		{info: "PasswordAuthenticator Password", configString: "?password=top%24ecret", clusterConfig: cfgWithAuth(gocql.PasswordAuthenticator{Password: "top$ecret"})},
+		{info: "PasswordAuthenticator", configString: "?username=alice%40bob.com&password=top%24ecret", clusterConfig: cfgWithAuth(gocql.PasswordAuthenticator{Username: "alice@bob.com", Password: "top$ecret"})},
+		// - optional SslOptions
+		{info: "SslOptions EnableHostVerification true", configString: "?enableHostVerification=true", clusterConfig: cfgWithSsl(&gocql.SslOptions{EnableHostVerification: true})},
+		{info: "SslOptions CaPath", configString: "?caPath=/some%20path.pem", clusterConfig: cfgWithSsl(&gocql.SslOptions{CaPath: "/some path.pem"})},
+		{info: "SslOptions CertPath", configString: "?certPath=/some+path.pem", clusterConfig: cfgWithSsl(&gocql.SslOptions{CertPath: "/some path.pem"})},
+		{info: "SslOptions KeyPath", configString: "?keyPath=/some path.pem", clusterConfig: cfgWithSsl(&gocql.SslOptions{KeyPath: "/some path.pem"})},
+		{info: "SslOptions", configString: "?caPath=/ca/path&certPath=/cert/path&keyPath=/key/path&enableHostVerification=1", clusterConfig: cfgWithSsl(&gocql.SslOptions{CaPath: "/ca/path", CertPath: "/cert/path", KeyPath: "/key/path", EnableHostVerification: true})},
 	}
-
-	tests = append(tests, TestStringToConfigStruct{info: "empty", configString: "", clusterConfig: NewClusterConfig()})
-	tests = append(tests, TestStringToConfigStruct{info: "Consistency any", configString: "?consistency=any", clusterConfig: NewClusterConfig()})
-	tests[len(tests)-1].clusterConfig.Consistency = 0
-	tests = append(tests, TestStringToConfigStruct{info: "Consistency one", configString: "?consistency=one", clusterConfig: NewClusterConfig()})
-	tests[len(tests)-1].clusterConfig.Consistency = 1
-	tests = append(tests, TestStringToConfigStruct{info: "Timeout < 0", configString: "?timeout=-1s", clusterConfig: NewClusterConfig()})
-	tests = append(tests, TestStringToConfigStruct{info: "Timeout > 0", configString: "?timeout=1s", clusterConfig: NewClusterConfig()})
-	tests[len(tests)-1].clusterConfig.Timeout = time.Second
-	tests = append(tests, TestStringToConfigStruct{info: "ConnectTimeout < 0", configString: "?connectTimeout=-1s", clusterConfig: NewClusterConfig()})
-	tests = append(tests, TestStringToConfigStruct{info: "ConnectTimeout > 0", configString: "?connectTimeout=1s", clusterConfig: NewClusterConfig()})
-	tests[len(tests)-1].clusterConfig.ConnectTimeout = time.Second
-	tests = append(tests, TestStringToConfigStruct{info: "Keyspace", configString: "?keyspace=system", clusterConfig: NewClusterConfig()})
-	tests[len(tests)-1].clusterConfig.Keyspace = "system"
-	tests = append(tests, TestStringToConfigStruct{info: "NumConns < 1", configString: "?numConns=0", clusterConfig: NewClusterConfig()})
-	tests = append(tests, TestStringToConfigStruct{info: "NumConns > 1", configString: "?numConns=2", clusterConfig: NewClusterConfig()})
-	tests[len(tests)-1].clusterConfig.NumConns = 2
-	tests = append(tests, TestStringToConfigStruct{info: "ignorePeerAddr true", configString: "?ignorePeerAddr=true", clusterConfig: NewClusterConfig()})
-	tests[len(tests)-1].clusterConfig.IgnorePeerAddr = true
-	tests = append(tests, TestStringToConfigStruct{info: "disableInitialHostLookup true", configString: "?disableInitialHostLookup=true", clusterConfig: NewClusterConfig()})
-	tests[len(tests)-1].clusterConfig.DisableInitialHostLookup = true
-	tests = append(tests, TestStringToConfigStruct{info: "writeCoalesceWaitTime 1s", configString: "?writeCoalesceWaitTime=1s", clusterConfig: NewClusterConfig()})
-	tests[len(tests)-1].clusterConfig.WriteCoalesceWaitTime = time.Second
-	tests = append(tests, TestStringToConfigStruct{info: "Host", configString: "one", clusterConfig: NewClusterConfig()})
-	tests[len(tests)-1].clusterConfig.Hosts = []string{"one"}
-	tests = append(tests, TestStringToConfigStruct{info: "Hosts", configString: "one,two,three", clusterConfig: NewClusterConfig()})
-	tests[len(tests)-1].clusterConfig.Hosts = []string{"one", "two", "three"}
-	tests = append(tests, TestStringToConfigStruct{info: "Host & Consistency any", configString: "one?consistency=any", clusterConfig: NewClusterConfig()})
-	tests[len(tests)-1].clusterConfig.Consistency = 0
-	tests[len(tests)-1].clusterConfig.Hosts = []string{"one"}
-	tests = append(tests, TestStringToConfigStruct{info: "Hosts & Consistency one", configString: "one,two,three?consistency=one", clusterConfig: NewClusterConfig()})
-	tests[len(tests)-1].clusterConfig.Consistency = 1
-	tests[len(tests)-1].clusterConfig.Hosts = []string{"one", "two", "three"}
 
 	for _, test := range tests {
 		clusterConfig, err := ConfigStringToClusterConfig(test.configString)
