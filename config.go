@@ -58,10 +58,10 @@ func ClusterConfigToConfigString(clusterConfig *gocql.ClusterConfig) string {
 		passwordAuthenticator, ok := clusterConfig.Authenticator.(gocql.PasswordAuthenticator)
 		if ok {
 			if passwordAuthenticator.Username != "" {
-				stringConfig += "username=" + passwordAuthenticator.Username + "&"
+				stringConfig += "username=" + url.QueryEscape(passwordAuthenticator.Username) + "&"
 			}
 			if passwordAuthenticator.Password != "" {
-				stringConfig += "password=" + passwordAuthenticator.Password + "&"
+				stringConfig += "password=" + url.QueryEscape(passwordAuthenticator.Password) + "&"
 			}
 		}
 	}
